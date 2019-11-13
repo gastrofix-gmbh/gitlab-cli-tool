@@ -1,0 +1,25 @@
+jobs:
+  include:
+    - stage: testing
+      language: python
+      python: "3.7"
+      script:
+        - pytest
+      branches:
+        except:
+          - master
+
+
+    - stage: build_and_push
+      if: branch = master
+      variables:
+        DOCKER_REGISTRY: https://index.docker.io/v1/
+      services:
+        - docker
+      script:
+        - echo "$DOCKER_HUB_PASS" | docker login -u $DOCKER_HUB_USER --password-stdin $DOCKER_REGISTRY
+        - docker build -t gastrofixgmbh/gitlabcli:latest .
+        - docker push gastrofixgmbh/gitlabcli:latest
+      branches:
+        only:
+          - master
