@@ -6,8 +6,8 @@ jobs:
       before_script:
         - python3 -m venv ./venv
         - . venv/bin/activate
-        - pip install --upgrade pip
-        - pip install -r requirements.txt
+        - pip install --upgrade --user pip
+        - pip install --user -r requirements.txt
       script:
         - pytest
       branches:
