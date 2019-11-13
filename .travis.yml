@@ -1,0 +1,30 @@
+jobs:
+  include:
+    - stage: testing
+      language: python
+      python: "3.7"
+      before_script:
+        - python3 -m venv ./venv
+        - . venv/bin/activate
+        - pip install --upgrade pip
+        - pip install -r requirements.txt
+      script:
+        - pytest
+      branches:
+        except:
+          - master
+
+    - stage: build_and_push
+      variables:
+        DOCKER_REGISTRY: https://index.docker.io/v1/
+
+      services:
+        - docker
+      script:
+        - echo "$DOCKER_HUB_PASS" | docker login -u $DOCKER_HUB_USER --password-stdin $DOCKER_REGISTRY
+        - docker build -t gastrofixgmbh/gitlabcli:latest .
+        - docker push gastrofixgmbh/gitlabcli:latest
+      branches:
+        only:
+          - master
+
