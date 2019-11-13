@@ -12,7 +12,6 @@ jobs:
     - stage: build_and_push
       variables:
         DOCKER_REGISTRY: https://index.docker.io/v1/
-
       services:
         - docker
       script:
