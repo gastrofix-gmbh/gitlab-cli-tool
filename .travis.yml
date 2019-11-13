@@ -9,6 +9,7 @@ jobs:
         except:
           - master
 
+
     - stage: build_and_push
       if: branch = master
       variables:
