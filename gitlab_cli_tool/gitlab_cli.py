@@ -17,7 +17,7 @@ class GitLabCLI:
     @staticmethod
     def parse_args(args):
         parser = argparse.ArgumentParser(
-            description='CLI for GitLab'
+            description='CLI for GitLab, to exit CTRL + D'
         )
 
         parser.add_argument('property_name', help='Projects, Runners, etc',
