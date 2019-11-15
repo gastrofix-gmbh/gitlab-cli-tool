@@ -7,10 +7,10 @@ Easy-to-use CLI that we can use in our terminal.
 
 1. [Initial Setup Instructions](#initial-setup-instructions)
 1. [Running Gitlab CLI](#running-gitlab-cli)
+1. [Usage](#usage)
 
 ## Initial Setup Instructions
 
-### Gitlab CLI on hub.docker.com
 ### Credentials to Gitlab
 You should store credentials in `~/.gitlab-cli/secrets.txt` <br/>
 You need to supply secrets.txt with correct credentials.
@@ -23,12 +23,27 @@ PROJECT_ID=234
 ```
 
 ## Running Gitlab CLI
-### 1. Pull docker image <br/> 
+
+### 1. Using docker
+
+#### 1.1 Pull docker image <br/> 
 You can find image here `https://hub.docker.com/r/gastrofixgmbh/gitlabcli` <br/>
 Docker pull command: `docker pull gastrofixgmbh/gitlabcli`
-### 2. Run docker container and map your local secrets.txt <br/> 
+#### 1.2 Run docker container and map your local secrets.txt <br/> 
 ```docker run -it --rm --volume=$HOME/.gitlab-cli:/root/.gitlab-cli gastrofixgmbh/gitlabcli```
-### 3. Run commands
+
+### 2. Running locally
+#### 2.1 Setup Python Virtual Environment
+```buildoutcfg
+python3 -m venv venv
+. venv/bin/activate
+pip3 install .
+```
+#### 2.2 Run script
+```python gitlab_cli_tool/run.py```
+
+
+## Usage
 #### Listing all runners
 You can list all runners or filter them with --name or --tag <br/>
 `runners list`
