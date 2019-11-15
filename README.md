@@ -119,7 +119,7 @@ Pipeline for branch master has been triggered
 https://gitlab.acme.com/smth/dummy-project/pipelines/XXXX
 ```
 It is possible to trigger a pipeline with variables with format `name=value` <br/>
-`pipeline run --branch master --variables RUN_ONLY_NEW_TESTS=true APP=2.35.5790` 
+`pipeline run --branch master --variables VAR1=true VAR2=3.12` 
 ```
 Pipeline for branch master has been triggered
 https://gitlab.acme.com/smth/dummy-project/pipelines/XXXX
