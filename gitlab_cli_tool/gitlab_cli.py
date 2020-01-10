@@ -2,7 +2,7 @@
 import argparse
 import sys
 
-from gitlab_cli_tool.cli_api import GitLabDataFilter, PropertyName, Actions
+from cli_api import GitLabDataFilter, PropertyName, Actions
 
 
 class GitLabCLI:
@@ -40,7 +40,7 @@ class GitLabCLI:
         return True
 
     def check_filters(self):
-        # TODO check all combination, write function for checking that. Maybe group arguments togheter
+        # TODO check all combination, write function for checking that. Maybe group arguments together
         if self.tags and self.names:
             print('Tag and names cannot be filtered together')
             return False

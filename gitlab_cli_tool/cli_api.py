@@ -225,10 +225,15 @@ class GitlabAPI:
         return [runner for runner in projects_runners if runner.id in all_filtered_runners]
 
     def get_projects_filtered_runners_by_tags(self, project_id, tags):
+        # changes here!!!!
+        # first assign tags to runners then filter them
         projects_runners = self.get_projects_runners(project_id)
+        import pdb; pdb.set_trace()
         all_filtered_runners = self.get_runners_by_tags(tags)
         all_filtered_runners = list(set([runner['id'] for runner in all_filtered_runners]))
-        return [runner for runner in projects_runners if runner.id in all_filtered_runners]
+        x = [runner for runner in projects_runners if runner.id in all_filtered_runners]
+
+        return x
 
     def get_projects_runners(self, project_id):
         return self.get_project(project_id).runners.list(all=True)
@@ -244,6 +249,7 @@ class GitlabAPI:
         if tags:
             for tag in tags:
                 url = f'{self.server}/api/v4/runners/all?tag_list={tag}&per_page=100'
+                # todo url = f'{self.server}/api/v4/projects/{project_id}/runners/all?tag_list={tag}&per_page=100'
                 runners += self.handle_pagination(url)
         else:
             url = f'{self.server}/api/v4/runners/all?per_page=100'
