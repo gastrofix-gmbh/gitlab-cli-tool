@@ -40,3 +40,45 @@
 
 # 2020-01-10 13:30:12.826067
 +runners resume --tag qa-01
+
+# 2020-01-10 13:53:12.925679
++runners list
+
+# 2020-01-10 13:53:47.819670
++runners list --tag xcode-11 qa-01
+
+# 2020-01-10 13:53:57.636627
++runners list --name qa-01
+
+# 2020-01-10 13:54:00.560376
++runners list --name
+
+# 2020-01-10 13:54:02.212996
++runners list --name 
+
+# 2020-01-10 13:54:10.273761
++runners list --name qa-01 qa-02
+
+# 2020-01-10 13:55:10.107020
++runner pause --tage qa-01 qa-02
+
+# 2020-01-10 13:55:14.796576
++runner pause --tag qa-01 qa-02
+
+# 2020-01-10 13:55:17.164078
++runner pause --tags qa-01 qa-02
+
+# 2020-01-10 13:55:24.484902
++runners pause --tags qa-01 qa-02
+
+# 2020-01-10 13:55:28.377481
++runners pause --tag qa-01 qa-02
+
+# 2020-01-10 13:55:36.316732
++runners resume --tag qa-01 qa-02
+
+# 2020-01-10 13:55:43.884500
++runners pause --name qa-01 qa-02
+
+# 2020-01-10 13:55:52.042371
++runners resume --name qa-01 qa-02

@@ -101,13 +101,14 @@ class GitLabDataFilter:
         filters = self.check_filters()
         project_name = self.api.get_project(self.project_id).name
         runners = []
+
         if filters == Filtering.WRONG:
             return 'Wrong arguments'
+
         elif filters == Filtering.RUN_PIPELINE:
             return self.api.run_pipeline(self.branch, self.project_id, self.variables)
+
         elif filters == Filtering.LIST_TAGS:
-            # changes to tags
-            # CHECK ONLY THIS ONE
             runners = self.api.get_projects_runners(self.project_id)
             runners = self.api.assign_tags_to_runners_asyncio(runners)
             runners = self.api.get_projects_filtered_runners_by_tags(runners, self.tags)
@@ -121,7 +122,6 @@ class GitLabDataFilter:
             runners = self.api.assign_tags_to_runners_asyncio(runners)
 
         elif filters == Filtering.PAUSE_TAGS:
-            # chagnes to tags
             runners = self.api.get_projects_runners(self.project_id)
             runners = self.api.assign_tags_to_runners_asyncio(runners)
             runners = self.api.get_projects_filtered_runners_by_tags(runners, self.tags)
@@ -130,8 +130,9 @@ class GitLabDataFilter:
         elif filters == Filtering.PAUSE_NAMES:
             runners = self.api.get_projects_filtered_runners_by_name(self.project_id, self.names)
             runners = self.api.change_runners_status(runners, False)
+            runners = self.api.assign_tags_to_runners_asyncio(runners)
+
         elif filters == Filtering.RESUME_TAGS:
-            # changes to tags
             runners = self.api.get_projects_runners(self.project_id)
             runners = self.api.assign_tags_to_runners_asyncio(runners)
             runners = self.api.get_projects_filtered_runners_by_tags(runners, self.tags)
@@ -140,13 +141,8 @@ class GitLabDataFilter:
         elif filters == Filtering.RESUME_NAMES:
             runners = self.api.get_projects_filtered_runners_by_name(self.project_id, self.names)
             runners = self.api.change_runners_status(runners, True)
+            runners = self.api.assign_tags_to_runners_asyncio(runners)
 
-        ##
-        # import pdb;
-        # pdb.set_trace()
-        # runners = self.api.assign_tags_to_runners_asyncio(runners) FOR NOW , it has to be uncommented
-
-        ###
         runners = self.api.assign_active_jobs_to_runners(runners, self.project_id)
         return self.format_output(runners, project_name)
 
