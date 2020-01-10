@@ -4,3 +4,18 @@
 
 # 2020-01-10 10:36:40.974657
 +runners list --tag qa
+
+# 2020-01-10 11:04:10.196596
++runners list
+
+# 2020-01-10 11:05:17.162275
++runners list --tag atf
+
+# 2020-01-10 12:46:59.135346
++runner list --tag qa
+
+# 2020-01-10 12:47:04.009468
++runners list --tag qa
+
+# 2020-01-10 12:47:44.515619
++runners list --tag qa at

@@ -106,24 +106,37 @@ class GitLabDataFilter:
         elif filters == Filtering.RUN_PIPELINE:
             return self.api.run_pipeline(self.branch, self.project_id, self.variables)
         elif filters == Filtering.LIST_TAGS:
-            runners = self.api.get_projects_filtered_runners_by_tags(self.project_id, self.tags)
+            # changes to tags
+            # CHECK ONLY THIS ONE
+            runners = self.api.get_projects_runners(self.project_id)
+            runners = self.api.assign_tags_to_runners_asyncio(runners)
+            runners = self.api.get_projects_filtered_runners_by_tags(runners, self.tags)
+
         elif filters == Filtering.LIST_NAMES:
             runners = self.api.get_projects_filtered_runners_by_name(self.project_id, self.names)
         elif filters == Filtering.LIST:
             runners = self.api.get_projects_runners(self.project_id)
         elif filters == Filtering.PAUSE_TAGS:
+            # chagnes to tags
             runners = self.api.get_projects_filtered_runners_by_tags(self.project_id, self.tags)
             runners = self.api.change_runners_status(runners, False)
         elif filters == Filtering.PAUSE_NAMES:
             runners = self.api.get_projects_filtered_runners_by_name(self.project_id, self.names)
             runners = self.api.change_runners_status(runners, False)
         elif filters == Filtering.RESUME_TAGS:
+            # changes to tags
             runners = self.api.get_projects_filtered_runners_by_tags(self.project_id, self.tags)
             runners = self.api.change_runners_status(runners, True)
         elif filters == Filtering.RESUME_NAMES:
             runners = self.api.get_projects_filtered_runners_by_name(self.project_id, self.names)
             runners = self.api.change_runners_status(runners, True)
-        runners = self.api.assign_tags_to_runners_asyncio(runners)
+
+        ##
+        # import pdb;
+        # pdb.set_trace()
+        # runners = self.api.assign_tags_to_runners_asyncio(runners) FOR NOW , it has to be uncommented
+
+        ###
         runners = self.api.assign_active_jobs_to_runners(runners, self.project_id)
         return self.format_output(runners, project_name)
 
@@ -148,7 +161,7 @@ class GitLabDataFilter:
 
 
 class GitlabAPI:
-    
+
     def __init__(self, server, token, trigger_token):
         self.server = server
         self.token = token
@@ -224,16 +237,41 @@ class GitlabAPI:
         all_filtered_runners = self.filter_by_names(projects_runners, names)
         return [runner for runner in projects_runners if runner.id in all_filtered_runners]
 
-    def get_projects_filtered_runners_by_tags(self, project_id, tags):
-        # changes here!!!!
-        # first assign tags to runners then filter them 
-        projects_runners = self.get_projects_runners(project_id)
-        import pdb; pdb.set_trace()
-        all_filtered_runners = self.get_runners_by_tags(tags)
-        all_filtered_runners = list(set([runner['id'] for runner in all_filtered_runners]))
-        x = [runner for runner in projects_runners if runner.id in all_filtered_runners]
+    # def get_projects_filtered_runners_by_tags(self, runners: List[dict], names: List[str]) -> List[dict]:
+    #     return self.filter_by_tags(runners, names)
+    #     # changes here!!!!
+    #     # first assign tags to runners then filter them
+    #     # projects_runners = self.get_projects_runners(project_id)
+    #     # import pdb; pdb.set_trace()
+    #     # all_filtered_runners = self.get_runners_by_tags(tags)
+    #
+    #     # all_filtered_runners = list(set([runner['id'] for runner in all_filtered_runners]))
+    #     # x = [runner for runner in projects_runners if runner.id in all_filtered_runners]
+    #     #
+    #     # return x
 
-        return x
+    def get_projects_filtered_runners_by_tags(self, runners: List[dict], tags: List[str]) -> List[dict]:
+        if not isinstance(tags, list):
+            raise RuntimeError(f'"tags" must be a list, {type(tags)} was passed!')
+        filtered_runners = []
+        for runner in runners:
+            for tag in tags:
+                if self.check_if_tag_in_list(tag, runner['tag_list']):
+                    filtered_runners.append(runner)
+                    # break to not to duplicate runners
+                    break
+        return filtered_runners
+
+    def check_if_tag_in_list(self, tag, list_of_runner_tags):
+        new_list_of_tags = [runner_tag.lower() for runner_tag in list_of_runner_tags]
+        # check if tag.lower is a part of any tag from tag_list
+        for runner_tag in new_list_of_tags:
+            if tag.lower() in runner_tag.lower():
+                return True
+        return False
+        # if tag.lower in new_list_of_tags:
+        #     return True
+        # return False
 
     def get_projects_runners(self, project_id):
         return self.get_project(project_id).runners.list(all=True)
