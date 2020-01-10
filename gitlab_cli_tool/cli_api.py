@@ -125,22 +125,22 @@ class GitLabDataFilter:
             runners = self.api.get_projects_runners(self.project_id)
             runners = self.api.assign_tags_to_runners_asyncio(runners)
             runners = self.api.get_projects_filtered_runners_by_tags(runners, self.tags)
-            runners = self.api.change_runners_status2(runners, False)
+            runners = self.api.change_runners_dict_status(runners, False)
 
         elif filters == Filtering.PAUSE_NAMES:
             runners = self.api.get_projects_filtered_runners_by_name(self.project_id, self.names)
-            runners = self.api.change_runners_status(runners, False)
+            runners = self.api.change_runners_class_status(runners, False)
             runners = self.api.assign_tags_to_runners_asyncio(runners)
 
         elif filters == Filtering.RESUME_TAGS:
             runners = self.api.get_projects_runners(self.project_id)
             runners = self.api.assign_tags_to_runners_asyncio(runners)
             runners = self.api.get_projects_filtered_runners_by_tags(runners, self.tags)
-            runners = self.api.change_runners_status2(runners, True)
+            runners = self.api.change_runners_dict_status(runners, True)
 
         elif filters == Filtering.RESUME_NAMES:
             runners = self.api.get_projects_filtered_runners_by_name(self.project_id, self.names)
-            runners = self.api.change_runners_status(runners, True)
+            runners = self.api.change_runners_class_status(runners, True)
             runners = self.api.assign_tags_to_runners_asyncio(runners)
 
         runners = self.api.assign_active_jobs_to_runners(runners, self.project_id)
@@ -351,12 +351,12 @@ class GitlabAPI:
                 counted_jobs[job['runner']['id']] = 1
         return counted_jobs
 
-    def change_runners_status(self, runners: List[ProjectRunner], status: bool) -> List[ProjectRunner]:
+    def change_runners_class_status(self, runners: List[ProjectRunner], status: bool) -> List[ProjectRunner]:
         """
         Function which pauses or resumes all selected runners
-        :param runners: List of runners
+        :param runners: List of runners [ProjectRunner]
         :param status: True (Resume) / False (Pause)
-        :return: List of runners
+        :return: List of runners [ProjectRunner]
         """
         payload = {'active': status}
         for runner in runners:
@@ -378,12 +378,12 @@ class GitlabAPI:
 
         return runners
 
-    def change_runners_status2(self, runners: List[dict], status: bool) -> List[dict]:
+    def change_runners_dict_status(self, runners: List[dict], status: bool) -> List[dict]:
         """
         Function which pauses or resumes all selected runners
-        :param runners: List of runners
+        :param runners: List of runners [dict]
         :param status: True (Resume) / False (Pause)
-        :return: List of runners
+        :return: List of runners [dict]
         """
         payload = {'active': status}
         for runner in runners:
