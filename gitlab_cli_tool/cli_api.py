@@ -226,7 +226,7 @@ class GitlabAPI:
 
     def get_projects_filtered_runners_by_tags(self, project_id, tags):
         # changes here!!!!
-        # first assign tags to runners then filter them
+        # first assign tags to runners then filter them 
         projects_runners = self.get_projects_runners(project_id)
         import pdb; pdb.set_trace()
         all_filtered_runners = self.get_runners_by_tags(tags)
