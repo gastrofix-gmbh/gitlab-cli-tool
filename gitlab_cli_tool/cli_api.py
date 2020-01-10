@@ -114,19 +114,29 @@ class GitLabDataFilter:
 
         elif filters == Filtering.LIST_NAMES:
             runners = self.api.get_projects_filtered_runners_by_name(self.project_id, self.names)
+            runners = self.api.assign_tags_to_runners_asyncio(runners)
+
         elif filters == Filtering.LIST:
             runners = self.api.get_projects_runners(self.project_id)
+            runners = self.api.assign_tags_to_runners_asyncio(runners)
+
         elif filters == Filtering.PAUSE_TAGS:
             # chagnes to tags
-            runners = self.api.get_projects_filtered_runners_by_tags(self.project_id, self.tags)
-            runners = self.api.change_runners_status(runners, False)
+            runners = self.api.get_projects_runners(self.project_id)
+            runners = self.api.assign_tags_to_runners_asyncio(runners)
+            runners = self.api.get_projects_filtered_runners_by_tags(runners, self.tags)
+            runners = self.api.change_runners_status2(runners, False)
+
         elif filters == Filtering.PAUSE_NAMES:
             runners = self.api.get_projects_filtered_runners_by_name(self.project_id, self.names)
             runners = self.api.change_runners_status(runners, False)
         elif filters == Filtering.RESUME_TAGS:
             # changes to tags
-            runners = self.api.get_projects_filtered_runners_by_tags(self.project_id, self.tags)
-            runners = self.api.change_runners_status(runners, True)
+            runners = self.api.get_projects_runners(self.project_id)
+            runners = self.api.assign_tags_to_runners_asyncio(runners)
+            runners = self.api.get_projects_filtered_runners_by_tags(runners, self.tags)
+            runners = self.api.change_runners_status2(runners, True)
+
         elif filters == Filtering.RESUME_NAMES:
             runners = self.api.get_projects_filtered_runners_by_name(self.project_id, self.names)
             runners = self.api.change_runners_status(runners, True)
@@ -369,5 +379,32 @@ class GitlabAPI:
                     print(f'Runner {runner.id} cannot be resumed because of {err}')
                 else:
                     print(f'Runner {runner.id} cannot be paused because of {err}')
+
+        return runners
+
+    def change_runners_status2(self, runners: List[dict], status: bool) -> List[dict]:
+        """
+        Function which pauses or resumes all selected runners
+        :param runners: List of runners
+        :param status: True (Resume) / False (Pause)
+        :return: List of runners
+        """
+        payload = {'active': status}
+        for runner in runners:
+            try:
+                url = f'{self.server}/api/v4/runners/{runner["id"]}'
+                response = requests.put(url, headers=self.headers, data=payload)
+                response.raise_for_status()
+                if status:
+                    runner['status'] = 'online'
+                    print(f'Runner id: {runner["id"]} is resumed')
+                else:
+                    runner['status'] = 'paused'
+                    print(f'Runner id: {runner["id"]} is paused')
+            except Exception as err:
+                if status:
+                    print(f'Runner {runner["id"]} cannot be resumed because of {err}')
+                else:
+                    print(f'Runner {runner["id"]} cannot be paused because of {err}')
 
         return runners
