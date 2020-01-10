@@ -6,8 +6,8 @@ from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.history import FileHistory
 
-from gitlab_cli import GitLabCLI
 from cli_api import PropertyName, Actions
+from gitlab_cli import GitLabCLI
 
 GitlabCLIKeywords = [property_name.value for property_name in PropertyName] + [action.value for action in Actions] + [
     '--branch', '--tag', '--name', '--variables']
@@ -23,6 +23,7 @@ class GitlabCLICompleter(Completer):
 
 
 def main():
+    keyboard_interrupt = 0
     while 1:
         try:
             user_input = prompt(u'Gitlabcli > ',
@@ -30,7 +31,14 @@ def main():
                                 auto_suggest=AutoSuggestFromHistory(),
                                 completer=GitlabCLICompleter(),
                                 )
+            keyboard_interrupt = 0
+            if user_input.lower() == 'exit' or user_input.lower() == 'quit':
+                break
         except KeyboardInterrupt:
+            keyboard_interrupt += 1
+            if keyboard_interrupt == 2:
+                break
+            print("Are you sure you want to exit? Ctrl + C to exit")
             continue
         except EOFError:
             break
