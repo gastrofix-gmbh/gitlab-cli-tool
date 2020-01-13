@@ -243,19 +243,6 @@ class GitlabAPI:
         all_filtered_runners = self.filter_by_names(projects_runners, names)
         return [runner for runner in projects_runners if runner.id in all_filtered_runners]
 
-    # def get_projects_filtered_runners_by_tags(self, runners: List[dict], names: List[str]) -> List[dict]:
-    #     return self.filter_by_tags(runners, names)
-    #     # changes here!!!!
-    #     # first assign tags to runners then filter them
-    #     # projects_runners = self.get_projects_runners(project_id)
-    #     # import pdb; pdb.set_trace()
-    #     # all_filtered_runners = self.get_runners_by_tags(tags)
-    #
-    #     # all_filtered_runners = list(set([runner['id'] for runner in all_filtered_runners]))
-    #     # x = [runner for runner in projects_runners if runner.id in all_filtered_runners]
-    #     #
-    #     # return x
-
     def get_projects_filtered_runners_by_tags(self, runners: List[dict], tags: List[str]) -> List[dict]:
         if not isinstance(tags, list):
             raise RuntimeError(f'"tags" must be a list, {type(tags)} was passed!')
@@ -275,9 +262,6 @@ class GitlabAPI:
             if tag.lower() in runner_tag.lower():
                 return True
         return False
-        # if tag.lower in new_list_of_tags:
-        #     return True
-        # return False
 
     def get_projects_runners(self, project_id):
         return self.get_project(project_id).runners.list(all=True)
