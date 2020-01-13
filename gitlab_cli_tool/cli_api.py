@@ -266,9 +266,11 @@ class GitlabAPI:
     def get_projects_runners(self, project_id):
         return self.get_project(project_id).runners.list(all=True)
 
-    def get_runners_by_tags(self, tags):
+    def get_runners_by_tags(self, tags, project_id):
         """
-        Function merges requests from gitlabapi and return runners with OR statement between tags
+        Function merges requests from gitlabapi and return runners with OR statement between tags.
+        Function looks for EXACT names of tags.
+        :param project_id
         :param tags:
         :return: list of tags
         """
@@ -276,8 +278,7 @@ class GitlabAPI:
         runners = []
         if tags:
             for tag in tags:
-                url = f'{self.server}/api/v4/runners/all?tag_list={tag}&per_page=100'
-                # todo url = f'{self.server}/api/v4/projects/{project_id}/runners/all?tag_list={tag}&per_page=100'
+                url = f'{self.server}/api/v4/projects/{project_id}/runners/all?tag_list={tag}&per_page=100'
                 runners += self.handle_pagination(url)
         else:
             url = f'{self.server}/api/v4/runners/all?per_page=100'
