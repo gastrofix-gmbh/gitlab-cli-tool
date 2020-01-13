@@ -44,6 +44,7 @@ class GitLabDataFilter:
         self.names = kwargs.get('names')
         self.branch = kwargs.get('branch')
         self.variables = kwargs.get('variables')
+        self.ignore = kwargs.get('ignore')
         self.server = ''
         self.token = ''
         self.trigger_token = ''
@@ -96,6 +97,9 @@ class GitLabDataFilter:
                   project_name, runner['active_jobs'], runner['status']] for runner in
                  runners]
         return tabulate(table, headers)
+
+    def get_filtered_data2(self):
+        pass
 
     def get_filtered_data(self):
         filters = self.check_filters()

@@ -13,6 +13,7 @@ class GitLabCLI:
         self.names = []
         self.branch = ''
         self.variables = []
+        self.ignore = []
 
     @staticmethod
     def parse_args(args):
@@ -31,6 +32,9 @@ class GitLabCLI:
         parser.add_argument('-t', '--tag', help='Filtering by tags', nargs='+')
         parser.add_argument('-n', '--name', help='Filtering by name', nargs='+')
         parser.add_argument('-v', '--variables', help='Triggering branch with variables, format key=value', nargs='+')
+        parser.add_argument('-i', '--ignore',
+                            help="Ignore runners, first specify if ignore by 'name' or 'tag', example 'runners list --name qa01 --ignore tag qa01-1'",
+                            nargs='+')
         return parser.parse_args(args)
 
     def check_variables(self):
@@ -72,19 +76,22 @@ class GitLabCLI:
         self.names = parsed_args.name
         self.branch = parsed_args.branch[0] if parsed_args.branch else parsed_args.branch
         self.variables = parsed_args.variables
+        self.ignore = parsed_args.ignore
 
     def get_result(self, args):
         self.assign_args_to_cli(args)
         if not self.check_filters():
             return 'No data'
         data_filter = GitLabDataFilter(property_name=self.property_name, action=self.action, tags=self.tags,
-                                       names=self.names, branch=self.branch, variables=self.variables)
+                                       names=self.names, branch=self.branch, variables=self.variables,
+                                       ignore=self.ignore)
         message = data_filter.get_filtered_data()
         return message
 
 
 def main():
     print(GitLabCLI().get_result(sys.argv[1:]))
+
 
 if __name__ == '__main__':
     main()
