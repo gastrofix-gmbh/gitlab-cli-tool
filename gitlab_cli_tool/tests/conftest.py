@@ -55,6 +55,18 @@ def project_runners():
         mock_runners.append(mock_runner)
     return mock_runners
 
+@pytest.fixture()
+def project_runners_dict():
+    project_runners = [1, 8, 9, 11, 12, 56, 128, 146, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272]
+    mock_runners = []
+    for project_id in project_runners[:6]:
+        runner = {'id': project_id, 'tag_list': ['tag1', 'tag2']}
+        mock_runners.append(runner)
+    for project_id in project_runners[6:]:
+        runner = {'id': project_id, 'tag_list': ['tag3']}
+        mock_runners.append(runner)
+    return mock_runners
+
 
 @pytest.fixture()
 def gitlabapi():

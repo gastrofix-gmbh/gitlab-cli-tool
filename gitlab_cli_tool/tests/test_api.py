@@ -12,7 +12,6 @@ from gitlab_cli_tool.gitlab_cli import GitLabCLI
 from gitlab_cli_tool.tests.conftest import (
     CORRECT_CLI_ARGUMENTS,
     WRONG_CLI_ARGUMENTS,
-    ALL_FILTERED_RUNNERS,
     JOBS_WITH_RUNNERS,
     RUNNERS,
     URLS_FOR_PAGINATION,
@@ -47,15 +46,19 @@ def test_check_gitlabdatafilter_init():
     assert cli.names == cli_filter.names
 
 
-@mock.patch('gitlab_cli_tool.cli_api.GitlabAPI.get_runners_by_tags')
-@mock.patch('gitlab_cli_tool.cli_api.GitlabAPI.get_projects_runners')
-def test_get_projects_filtered_runners_by_tags(mock_project_runners, mock_filtered_runners, gitlabapi, project_runners):
-    mock_project_runners.return_value = project_runners
-    mock_filtered_runners.return_value = ALL_FILTERED_RUNNERS
-    correct_output = [261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272]
-    output = gitlabapi.get_projects_filtered_runners_by_tags(1, 1)
-    output = [runner.id for runner in output]
-    assert correct_output == output
+def test_get_projects_filtered_runners_by_tags(gitlabapi, project_runners_dict):
+    tags1 = ['tag1']
+    expected_output1 = project_runners_dict[:6]
+    tags2 = ['tag']
+    expected_output2 = project_runners_dict
+    tags3 = ['tag3']
+    expected_output3 = project_runners_dict[6:]
+    output = gitlabapi.get_projects_filtered_runners_by_tags(project_runners_dict, tags1)
+    assert expected_output1 == output
+    output = gitlabapi.get_projects_filtered_runners_by_tags(project_runners_dict, tags2)
+    assert expected_output2 == output
+    output = gitlabapi.get_projects_filtered_runners_by_tags(project_runners_dict, tags3)
+    assert expected_output3 == output
 
 
 def test_filter_by_names(gitlabapi, project_runners_with_names):

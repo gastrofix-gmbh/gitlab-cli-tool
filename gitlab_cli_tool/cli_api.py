@@ -101,29 +101,48 @@ class GitLabDataFilter:
         filters = self.check_filters()
         project_name = self.api.get_project(self.project_id).name
         runners = []
+
         if filters == Filtering.WRONG:
             return 'Wrong arguments'
+
         elif filters == Filtering.RUN_PIPELINE:
             return self.api.run_pipeline(self.branch, self.project_id, self.variables)
+
         elif filters == Filtering.LIST_TAGS:
-            runners = self.api.get_projects_filtered_runners_by_tags(self.project_id, self.tags)
+            runners = self.api.get_projects_runners(self.project_id)
+            runners = self.api.assign_tags_to_runners_asyncio(runners)
+            runners = self.api.get_projects_filtered_runners_by_tags(runners, self.tags)
+
         elif filters == Filtering.LIST_NAMES:
             runners = self.api.get_projects_filtered_runners_by_name(self.project_id, self.names)
+            runners = self.api.assign_tags_to_runners_asyncio(runners)
+
         elif filters == Filtering.LIST:
             runners = self.api.get_projects_runners(self.project_id)
+            runners = self.api.assign_tags_to_runners_asyncio(runners)
+
         elif filters == Filtering.PAUSE_TAGS:
-            runners = self.api.get_projects_filtered_runners_by_tags(self.project_id, self.tags)
-            runners = self.api.change_runners_status(runners, False)
+            runners = self.api.get_projects_runners(self.project_id)
+            runners = self.api.assign_tags_to_runners_asyncio(runners)
+            runners = self.api.get_projects_filtered_runners_by_tags(runners, self.tags)
+            runners = self.api.change_runners_dict_status(runners, False)
+
         elif filters == Filtering.PAUSE_NAMES:
             runners = self.api.get_projects_filtered_runners_by_name(self.project_id, self.names)
-            runners = self.api.change_runners_status(runners, False)
+            runners = self.api.change_runners_class_status(runners, False)
+            runners = self.api.assign_tags_to_runners_asyncio(runners)
+
         elif filters == Filtering.RESUME_TAGS:
-            runners = self.api.get_projects_filtered_runners_by_tags(self.project_id, self.tags)
-            runners = self.api.change_runners_status(runners, True)
+            runners = self.api.get_projects_runners(self.project_id)
+            runners = self.api.assign_tags_to_runners_asyncio(runners)
+            runners = self.api.get_projects_filtered_runners_by_tags(runners, self.tags)
+            runners = self.api.change_runners_dict_status(runners, True)
+
         elif filters == Filtering.RESUME_NAMES:
             runners = self.api.get_projects_filtered_runners_by_name(self.project_id, self.names)
-            runners = self.api.change_runners_status(runners, True)
-        runners = self.api.assign_tags_to_runners_asyncio(runners)
+            runners = self.api.change_runners_class_status(runners, True)
+            runners = self.api.assign_tags_to_runners_asyncio(runners)
+
         runners = self.api.assign_active_jobs_to_runners(runners, self.project_id)
         return self.format_output(runners, project_name)
 
@@ -148,7 +167,7 @@ class GitLabDataFilter:
 
 
 class GitlabAPI:
-    
+
     def __init__(self, server, token, trigger_token):
         self.server = server
         self.token = token
@@ -224,18 +243,34 @@ class GitlabAPI:
         all_filtered_runners = self.filter_by_names(projects_runners, names)
         return [runner for runner in projects_runners if runner.id in all_filtered_runners]
 
-    def get_projects_filtered_runners_by_tags(self, project_id, tags):
-        projects_runners = self.get_projects_runners(project_id)
-        all_filtered_runners = self.get_runners_by_tags(tags)
-        all_filtered_runners = list(set([runner['id'] for runner in all_filtered_runners]))
-        return [runner for runner in projects_runners if runner.id in all_filtered_runners]
+    def get_projects_filtered_runners_by_tags(self, runners: List[dict], tags: List[str]) -> List[dict]:
+        if not isinstance(tags, list):
+            raise RuntimeError(f'"tags" must be a list, {type(tags)} was passed!')
+        filtered_runners = []
+        for runner in runners:
+            for tag in tags:
+                if self.check_if_tag_in_list(tag, runner['tag_list']):
+                    filtered_runners.append(runner)
+                    # break to not to duplicate runners
+                    break
+        return filtered_runners
+
+    def check_if_tag_in_list(self, tag, list_of_runner_tags):
+        new_list_of_tags = [runner_tag.lower() for runner_tag in list_of_runner_tags]
+        # check if tag.lower is a part of any tag from tag_list
+        for runner_tag in new_list_of_tags:
+            if tag.lower() in runner_tag.lower():
+                return True
+        return False
 
     def get_projects_runners(self, project_id):
         return self.get_project(project_id).runners.list(all=True)
 
-    def get_runners_by_tags(self, tags):
+    def get_runners_by_tags(self, tags, project_id):
         """
-        Function merges requests from gitlabapi and return runners with OR statement between tags
+        Function merges requests from gitlabapi and return runners with OR statement between tags.
+        Function looks for EXACT names of tags.
+        :param project_id
         :param tags:
         :return: list of tags
         """
@@ -243,7 +278,7 @@ class GitlabAPI:
         runners = []
         if tags:
             for tag in tags:
-                url = f'{self.server}/api/v4/runners/all?tag_list={tag}&per_page=100'
+                url = f'{self.server}/api/v4/projects/{project_id}/runners/all?tag_list={tag}&per_page=100'
                 runners += self.handle_pagination(url)
         else:
             url = f'{self.server}/api/v4/runners/all?per_page=100'
@@ -301,12 +336,12 @@ class GitlabAPI:
                 counted_jobs[job['runner']['id']] = 1
         return counted_jobs
 
-    def change_runners_status(self, runners: List[ProjectRunner], status: bool) -> List[ProjectRunner]:
+    def change_runners_class_status(self, runners: List[ProjectRunner], status: bool) -> List[ProjectRunner]:
         """
         Function which pauses or resumes all selected runners
-        :param runners: List of runners
+        :param runners: List of runners [ProjectRunner]
         :param status: True (Resume) / False (Pause)
-        :return: List of runners
+        :return: List of runners [ProjectRunner]
         """
         payload = {'active': status}
         for runner in runners:
@@ -325,5 +360,32 @@ class GitlabAPI:
                     print(f'Runner {runner.id} cannot be resumed because of {err}')
                 else:
                     print(f'Runner {runner.id} cannot be paused because of {err}')
+
+        return runners
+
+    def change_runners_dict_status(self, runners: List[dict], status: bool) -> List[dict]:
+        """
+        Function which pauses or resumes all selected runners
+        :param runners: List of runners [dict]
+        :param status: True (Resume) / False (Pause)
+        :return: List of runners [dict]
+        """
+        payload = {'active': status}
+        for runner in runners:
+            try:
+                url = f'{self.server}/api/v4/runners/{runner["id"]}'
+                response = requests.put(url, headers=self.headers, data=payload)
+                response.raise_for_status()
+                if status:
+                    runner['status'] = 'online'
+                    print(f'Runner id: {runner["id"]} is resumed')
+                else:
+                    runner['status'] = 'paused'
+                    print(f'Runner id: {runner["id"]} is paused')
+            except Exception as err:
+                if status:
+                    print(f'Runner {runner["id"]} cannot be resumed because of {err}')
+                else:
+                    print(f'Runner {runner["id"]} cannot be paused because of {err}')
 
         return runners
