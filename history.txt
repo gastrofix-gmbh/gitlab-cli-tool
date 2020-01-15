@@ -76,3 +76,36 @@
 
 # 2020-01-15 11:32:13.342027
 +runners list --tag qa-01.01 qa-04.01 --ignore tag qa
+
+# 2020-01-15 11:47:52.081314
++runners list
+
+# 2020-01-15 11:48:44.126518
++runners list --tag qa-01.01 qa-04.01 --ignore tag qa
+
+# 2020-01-15 11:48:54.207754
++runners list --name qa-01.01 qa-04.01 --ignore tag qa
+
+# 2020-01-15 11:49:06.215167
++runners list --name qa-01.01 qa-04.01 --ignore tag qa-01
+
+# 2020-01-15 11:49:14.527138
++runners list --name qa-01.01 qa-04.01 --ignore tag qa-01 qa-04
+
+# 2020-01-15 11:49:34.048708
++runners list --name qa --ignore tag qa-01
+
+# 2020-01-15 11:49:52.829082
++runners list --name qa-01 qa-02 --ignore tag qa-01
+
+# 2020-01-15 11:49:59.855906
++runners pause --name qa-01 qa-02 --ignore tag qa-01
+
+# 2020-01-15 11:50:11.826750
++runners resume --name qa-01 qa-02 --ignore tag qa-01
+
+# 2020-01-15 11:53:20.586544
++runners pause --name qa-01 qa-02 --ignore tag qa-01
+
+# 2020-01-15 11:53:27.638814
++runners resume --name qa-01 qa-02 --ignore tag qa-01

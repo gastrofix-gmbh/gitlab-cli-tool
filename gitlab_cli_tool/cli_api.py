@@ -108,18 +108,8 @@ class GitLabDataFilter:
             return self.api.filter_by_names_new(current_runners, filter_values)
         elif filter == Filtering.TAGS:
             return self.api.get_projects_filtered_runners_by_tags(current_runners, filter_values)
-        # 1. Check if RUNNERS  or PIPELINE or WRONG ARGS
-        # 2. if runners :
-        # 2.1 list all and filter them
-        # 2.2 fiter through --ignore
-        # 2.3 pause or resume
-        # 2.4 print
-        # 3 if pipeline -> run pipeline
 
-    def relative_complement(self, runners, runners_to_ignore):
-        print("RUNNERS:", runners)
-        print("TO IGNORE:", runners_to_ignore)
-
+    def relative_complement_of_runners(self, runners, runners_to_ignore):
         new_runners = []
         for runner in runners:
             if runner not in runners_to_ignore:
@@ -127,17 +117,14 @@ class GitLabDataFilter:
         return new_runners
 
     def ignore_runners(self, runners):
+        runners_to_ignore = []
         if self.ignore[0].lower() == 'tag':
             tags = self.ignore[1:]
             runners_to_ignore = self.filter_runners(runners, Filtering.TAGS, tags)
-            result = self.relative_complement(runners, runners_to_ignore)
-            print('ok1')
-            import pdb;
-            pdb.set_trace()
-            print('ok2')
         elif self.ignore[0].lower() == 'name':
-            pass
-            # get runners from runners and substract
+            names = self.ignore[1:]
+            runners_to_ignore = self.filter_runners(runners, Filtering.NAMES, names)
+        return self.relative_complement_of_runners(runners, runners_to_ignore)
 
     def get_filtered_runners(self):
         runners = self.api.get_projects_runners(self.project_id)
@@ -148,10 +135,23 @@ class GitLabDataFilter:
             runners = self.filter_runners(runners, Filtering.TAGS, self.tags)
         if self.ignore:
             runners = self.ignore_runners(runners)
+        return runners
+
+    def make_action_on_runners(self, runners):
+        if self.action == Actions.PAUSE.value:
+            runners = self.api.change_runners_dict_status(runners, False)
+        elif self.action == Actions.RESUME.value:
+            runners = self.api.change_runners_dict_status(runners, True)
+        runners = self.api.assign_active_jobs_to_runners(runners, self.project_id)
+        project_name = self.api.get_project(self.project_id).name
+        return self.format_output(runners, project_name)
 
     def get_filtered_data(self):
         if self.property_name == PropertyName.RUNNERS.value:
-            self.get_filtered_runners()
+            runners = self.get_filtered_runners()
+            return self.make_action_on_runners(runners)
+        elif self.property_name == PropertyName.PIPELINE.value:
+            return self.api.run_pipeline(self.branch, self.project_id, self.variables)
 
         # print(self.property_name)
         # print(self.action)
