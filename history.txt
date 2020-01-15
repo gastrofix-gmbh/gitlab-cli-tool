@@ -109,3 +109,6 @@
 
 # 2020-01-15 11:53:27.638814
 +runners resume --name qa-01 qa-02 --ignore tag qa-01
+
+# 2020-01-15 12:02:41.742252
++pipeline run --branch master --variables RUN_ONLY_NEW_TESTS=true
