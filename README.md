@@ -37,10 +37,10 @@ Docker pull command: `docker pull gastrofixgmbh/gitlabcli`
 ```buildoutcfg
 python3 -m venv venv
 . venv/bin/activate
-pip3 install .
+pip3 install -r requirements.txt
 ```
 #### 2.2 Run script
-```python gitlab_cli_tool/run.py```
+```python -m gitlab_cli_tool.run.py```
 
 
 ## Usage
@@ -110,6 +110,14 @@ qa-01.02  ios13, qa-01.02  dummy-project           4        online
 qa-01.03  ios13, qa-01.03  dummy-project           4        online
 qa-01.04  atf, qa-01.04    dummy-project           4        online
 ```
+
+#### Ignore runners
+It is possible to ignore runners while listing, pausing or resuming. You have to ignore by names or tags. <br/>
+Usage `runners <action> --ignore tag tag1, tag2 ,tag3` <br/> or
+`runners <action> --ignore name name1, name2` <br> 
+For example `runners list --ignore tag qa` will list all runners but not those which have `qa` inside their tags <br/>
+`runners resume --name qa-01 --ignore name qa-01.01 ` will resume runners containing `qa-01` in name but will ignore `qa-01.01`
+
 
 #### Trigger a pipeline by branch name
 Trigger a pipeline command <br/>

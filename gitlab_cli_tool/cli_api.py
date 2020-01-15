@@ -139,6 +139,7 @@ class GitLabDataFilter:
         return self.format_output(runners, project_name)
 
     def get_filtered_data(self):
+        # todo check command line arguments
         if self.property_name == PropertyName.RUNNERS.value:
             runners = self.get_filtered_runners()
             return self.make_action_on_runners(runners)

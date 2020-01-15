@@ -133,7 +133,7 @@ def test_format_variables(gitlabapi):
     output = gitlabapi.format_variables(variables)
     assert output == expected_output
 
-
+# todo Update this test
 # @mock.patch('gitlab_cli_tool.cli_api.GitLabDataFilter.check_filters')
 # def test_get_filtered_data_WRONG(mock_check_filters, gitlabdatafilter):
 #     mock_check_filters.return_value = Filtering.WRONG
@@ -141,7 +141,7 @@ def test_format_variables(gitlabapi):
 #     expected_output = 'Wrong arguments'
 #     assert output == expected_output
 
-
+# todo Update this test
 # @mock.patch('gitlab_cli_tool.cli_api.GitlabAPI.run_pipeline')
 # @mock.patch('gitlab_cli_tool.cli_api.GitLabDataFilter.check_filters')
 # def test_get_filtered_data_RUN_PIPELINE(mock_check_filters, mock_run_pipeline, gitlabdatafilter):
@@ -153,7 +153,7 @@ def test_format_variables(gitlabapi):
 #     mock_run_pipeline.assert_called_with('dummy', 1, 'dummy')  # 1 is the project_id which will change later
 #     assert expected_output == output
 
-
+# todo Update this test
 # @mock.patch('gitlab_cli_tool.cli_api.GitLabDataFilter.format_output')
 # @mock.patch('gitlab_cli_tool.cli_api.GitLabDataFilter.check_filters')
 # def test_get_filtered_data_parameters(mock_check_filters, mock_format_output, gitlabdatafilter_with_api):
