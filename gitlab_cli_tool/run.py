@@ -7,10 +7,10 @@ from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.history import FileHistory
 
 from gitlab_cli_tool.cli_api import PropertyName, Actions
-from gitlab_cli import GitLabCLI
+from gitlab_cli_tool.gitlab_cli import GitLabCLI
 
 GitlabCLIKeywords = [property_name.value for property_name in PropertyName] + [action.value for action in Actions] + [
-    '--branch', '--tag', '--name', '--variables']
+    '--branch', '--tag', '--name', '--variables', '--ignore']
 
 
 class GitlabCLICompleter(Completer):
