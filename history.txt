@@ -112,3 +112,9 @@
 
 # 2020-01-15 12:02:41.742252
 +pipeline run --branch master --variables RUN_ONLY_NEW_TESTS=true
+
+# 2020-01-15 12:19:42.476240
++runner list
+
+# 2020-01-15 12:19:46.097448
++runners list
