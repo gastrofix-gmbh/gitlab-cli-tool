@@ -13,14 +13,16 @@ from tabulate import tabulate
 
 class Filtering(Enum):
     WRONG = 0
-    LIST = 1
-    LIST_TAGS = 2
-    LIST_NAMES = 3
-    PAUSE_TAGS = 4
-    PAUSE_NAMES = 5
-    RESUME_TAGS = 6
-    RESUME_NAMES = 7
-    RUN_PIPELINE = 8
+    NAMES = 1
+    TAGS = 2
+    # LIST = 1
+    # LIST_TAGS = 2
+    # LIST_NAMES = 3
+    # PAUSE_TAGS = 4
+    # PAUSE_NAMES = 5
+    # RESUME_TAGS = 6
+    # RESUME_NAMES = 7
+    # RUN_PIPELINE = 8
 
 
 class Actions(Enum):
@@ -98,76 +100,134 @@ class GitLabDataFilter:
                  runners]
         return tabulate(table, headers)
 
-    def get_filtered_data2(self):
-        pass
+    def run_pipeline(self):
+        return self.api.run_pipeline(self.branch, self.project_id, self.variables)
+
+    def filter_runners(self, current_runners, filter, filter_values):
+        if filter == Filtering.NAMES:
+            return self.api.filter_by_names_new(current_runners, filter_values)
+        elif filter == Filtering.TAGS:
+            return self.api.get_projects_filtered_runners_by_tags(current_runners, filter_values)
+        # 1. Check if RUNNERS  or PIPELINE or WRONG ARGS
+        # 2. if runners :
+        # 2.1 list all and filter them
+        # 2.2 fiter through --ignore
+        # 2.3 pause or resume
+        # 2.4 print
+        # 3 if pipeline -> run pipeline
+
+    def relative_complement(self, runners, runners_to_ignore):
+        print("RUNNERS:", runners)
+        print("TO IGNORE:", runners_to_ignore)
+
+        new_runners = []
+        for runner in runners:
+            if runner not in runners_to_ignore:
+                new_runners.append(runner)
+        return new_runners
+
+    def ignore_runners(self, runners):
+        if self.ignore[0].lower() == 'tag':
+            tags = self.ignore[1:]
+            runners_to_ignore = self.filter_runners(runners, Filtering.TAGS, tags)
+            result = self.relative_complement(runners, runners_to_ignore)
+            print('ok1')
+            import pdb;
+            pdb.set_trace()
+            print('ok2')
+        elif self.ignore[0].lower() == 'name':
+            pass
+            # get runners from runners and substract
+
+    def get_filtered_runners(self):
+        runners = self.api.get_projects_runners(self.project_id)
+        runners = self.api.assign_tags_to_runners_asyncio(runners)
+        if self.names:
+            runners = self.filter_runners(runners, Filtering.NAMES, self.names)
+        elif self.tags:
+            runners = self.filter_runners(runners, Filtering.TAGS, self.tags)
+        if self.ignore:
+            runners = self.ignore_runners(runners)
 
     def get_filtered_data(self):
-        filters = self.check_filters()
-        project_name = self.api.get_project(self.project_id).name
-        runners = []
+        if self.property_name == PropertyName.RUNNERS.value:
+            self.get_filtered_runners()
 
-        if filters == Filtering.WRONG:
-            return 'Wrong arguments'
+        # print(self.property_name)
+        # print(self.action)
+        # print(self.tags)
+        # print(self.names)
+        # print(self.branch)
+        # print(self.variables)
+        # print(self.ignore)
+        # return 1
+        # return None
+        # filters = self.check_filters()
+        # project_name = self.api.get_project(self.project_id).name
+        # runners = []
+        #
+        # if filters == Filtering.WRONG:
+        #     return 'Wrong arguments'
+        #
+        # elif filters == Filtering.RUN_PIPELINE:
+        #     return self.api.run_pipeline(self.branch, self.project_id, self.variables)
+        #
+        # elif filters == Filtering.LIST_TAGS:
+        #     runners = self.api.get_projects_runners(self.project_id)
+        #     runners = self.api.assign_tags_to_runners_asyncio(runners)
+        #     runners = self.api.get_projects_filtered_runners_by_tags(runners, self.tags)
+        #
+        # elif filters == Filtering.LIST_NAMES:
+        #     runners = self.api.get_projects_filtered_runners_by_name(self.project_id, self.names)
+        #     runners = self.api.assign_tags_to_runners_asyncio(runners)
+        #
+        # elif filters == Filtering.LIST:
+        #     runners = self.api.get_projects_runners(self.project_id)
+        #     runners = self.api.assign_tags_to_runners_asyncio(runners)
+        #
+        # elif filters == Filtering.PAUSE_TAGS:
+        #     runners = self.api.get_projects_runners(self.project_id)
+        #     runners = self.api.assign_tags_to_runners_asyncio(runners)
+        #     runners = self.api.get_projects_filtered_runners_by_tags(runners, self.tags)
+        #     runners = self.api.change_runners_dict_status(runners, False)
+        #
+        # elif filters == Filtering.PAUSE_NAMES:
+        #     runners = self.api.get_projects_filtered_runners_by_name(self.project_id, self.names)
+        #     runners = self.api.change_runners_class_status(runners, False)
+        #     runners = self.api.assign_tags_to_runners_asyncio(runners)
+        #
+        # elif filters == Filtering.RESUME_TAGS:
+        #     runners = self.api.get_projects_runners(self.project_id)
+        #     runners = self.api.assign_tags_to_runners_asyncio(runners)
+        #     runners = self.api.get_projects_filtered_runners_by_tags(runners, self.tags)
+        #     runners = self.api.change_runners_dict_status(runners, True)
+        #
+        # elif filters == Filtering.RESUME_NAMES:
+        #     runners = self.api.get_projects_filtered_runners_by_name(self.project_id, self.names)
+        #     runners = self.api.change_runners_class_status(runners, True)
+        #     runners = self.api.assign_tags_to_runners_asyncio(runners)
+        #
+        # runners = self.api.assign_active_jobs_to_runners(runners, self.project_id)
+        # return self.format_output(runners, project_name)
 
-        elif filters == Filtering.RUN_PIPELINE:
-            return self.api.run_pipeline(self.branch, self.project_id, self.variables)
-
-        elif filters == Filtering.LIST_TAGS:
-            runners = self.api.get_projects_runners(self.project_id)
-            runners = self.api.assign_tags_to_runners_asyncio(runners)
-            runners = self.api.get_projects_filtered_runners_by_tags(runners, self.tags)
-
-        elif filters == Filtering.LIST_NAMES:
-            runners = self.api.get_projects_filtered_runners_by_name(self.project_id, self.names)
-            runners = self.api.assign_tags_to_runners_asyncio(runners)
-
-        elif filters == Filtering.LIST:
-            runners = self.api.get_projects_runners(self.project_id)
-            runners = self.api.assign_tags_to_runners_asyncio(runners)
-
-        elif filters == Filtering.PAUSE_TAGS:
-            runners = self.api.get_projects_runners(self.project_id)
-            runners = self.api.assign_tags_to_runners_asyncio(runners)
-            runners = self.api.get_projects_filtered_runners_by_tags(runners, self.tags)
-            runners = self.api.change_runners_dict_status(runners, False)
-
-        elif filters == Filtering.PAUSE_NAMES:
-            runners = self.api.get_projects_filtered_runners_by_name(self.project_id, self.names)
-            runners = self.api.change_runners_class_status(runners, False)
-            runners = self.api.assign_tags_to_runners_asyncio(runners)
-
-        elif filters == Filtering.RESUME_TAGS:
-            runners = self.api.get_projects_runners(self.project_id)
-            runners = self.api.assign_tags_to_runners_asyncio(runners)
-            runners = self.api.get_projects_filtered_runners_by_tags(runners, self.tags)
-            runners = self.api.change_runners_dict_status(runners, True)
-
-        elif filters == Filtering.RESUME_NAMES:
-            runners = self.api.get_projects_filtered_runners_by_name(self.project_id, self.names)
-            runners = self.api.change_runners_class_status(runners, True)
-            runners = self.api.assign_tags_to_runners_asyncio(runners)
-
-        runners = self.api.assign_active_jobs_to_runners(runners, self.project_id)
-        return self.format_output(runners, project_name)
-
-    def check_filters(self):
-        if self.property_name == PropertyName.RUNNERS.value and self.action == Actions.LIST.value and self.tags:
-            return Filtering.LIST_TAGS
-        elif self.property_name == PropertyName.RUNNERS.value and self.action == Actions.LIST.value and self.names:
-            return Filtering.LIST_NAMES
-        elif self.property_name == PropertyName.RUNNERS.value and self.action == Actions.LIST.value:
-            return Filtering.LIST
-        elif self.property_name == PropertyName.RUNNERS.value and self.action == Actions.PAUSE.value and self.tags:
-            return Filtering.PAUSE_TAGS
-        elif self.property_name == PropertyName.RUNNERS.value and self.action == Actions.PAUSE.value and self.names:
-            return Filtering.PAUSE_NAMES
-        elif self.property_name == PropertyName.RUNNERS.value and self.action == Actions.RESUME.value and self.tags:
-            return Filtering.RESUME_TAGS
-        elif self.property_name == PropertyName.RUNNERS.value and self.action == Actions.RESUME.value and self.names:
-            return Filtering.RESUME_NAMES
-        elif self.property_name == PropertyName.PIPELINE.value and self.action == Actions.RUN.value and self.branch:
-            return Filtering.RUN_PIPELINE
-        return Filtering.WRONG
+    # def check_filters(self):
+    #     if self.property_name == PropertyName.RUNNERS.value and self.action == Actions.LIST.value and self.tags:
+    #         return Filtering.LIST_TAGS
+    #     elif self.property_name == PropertyName.RUNNERS.value and self.action == Actions.LIST.value and self.names:
+    #         return Filtering.LIST_NAMES
+    #     elif self.property_name == PropertyName.RUNNERS.value and self.action == Actions.LIST.value:
+    #         return Filtering.LIST
+    #     elif self.property_name == PropertyName.RUNNERS.value and self.action == Actions.PAUSE.value and self.tags:
+    #         return Filtering.PAUSE_TAGS
+    #     elif self.property_name == PropertyName.RUNNERS.value and self.action == Actions.PAUSE.value and self.names:
+    #         return Filtering.PAUSE_NAMES
+    #     elif self.property_name == PropertyName.RUNNERS.value and self.action == Actions.RESUME.value and self.tags:
+    #         return Filtering.RESUME_TAGS
+    #     elif self.property_name == PropertyName.RUNNERS.value and self.action == Actions.RESUME.value and self.names:
+    #         return Filtering.RESUME_NAMES
+    #     elif self.property_name == PropertyName.PIPELINE.value and self.action == Actions.RUN.value and self.branch:
+    #         return Filtering.RUN_PIPELINE
+    #     return Filtering.WRONG
 
 
 class GitlabAPI:
@@ -241,6 +301,19 @@ class GitlabAPI:
                 if name.lower() in runner.description.lower():
                     filtered_runners.append(runner)
         return list(set([runner.id for runner in filtered_runners]))
+
+    @staticmethod
+    def filter_by_names_new(runners: List[dict], names: List[str]) -> List[dict]:
+        if not isinstance(names, list):
+            raise RuntimeError(f'"names" must be a list, {type(names)} was passed!')
+        filtered_runners = []
+        for runner in runners:
+            for name in names:
+                if name.lower() in runner['description'].lower():
+                    filtered_runners.append(runner)
+                    break
+        # return list(set([runner.id for runner in filtered_runners]))
+        return filtered_runners
 
     def get_projects_filtered_runners_by_name(self, project_id, names):
         projects_runners = self.get_projects_runners(project_id)
