@@ -2,7 +2,7 @@
 import argparse
 import sys
 
-from cli_api import GitLabDataFilter, PropertyName, Actions
+from gitlab_cli_tool.cli_api import GitLabDataFilter, PropertyName, Actions
 
 
 class GitLabCLI:
