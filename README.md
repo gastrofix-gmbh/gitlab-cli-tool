@@ -41,6 +41,8 @@ pip3 install -r requirements.txt
 ```
 #### 2.2 Run script
 ```python -m gitlab_cli_tool.run.py```
+<br/> or <br/>
+```PYTHONPATH=. python gitlab_cli_tool/run.py```
 
 
 ## Usage

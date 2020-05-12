@@ -31,6 +31,16 @@ HEADERS_FOR_PAGINATION = [{'Content-Type': 'application/json',
                           {'Content-Type': 'application/json',
                            'Link': '<https://gitlab.server.com/api/v4/runners/all?page=2&per_page=40>; rel="prev", <https://gitlab.server.com/api/v4/runners/all?page=1&per_page=40>; rel="first", <https://gitlab.server.com/api/v4/runners/all?page=3&per_page=40>; rel="last"'}]
 
+ALL_INFO_RUNNERS_DICT = [
+    {'id': 1, 'description': 'qa-01.01', 'ip_address': '123.12.12.10', 'active': True, 'is_shared': False,
+     'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-x1', 'tag-x2']},
+    {'id': 2, 'description': 'qa-01.02', 'ip_address': '123.12.12.11', 'active': True, 'is_shared': False,
+     'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-x1', 'tag-x2']},
+    {'id': 3, 'description': 'qa-02.01', 'ip_address': '123.12.12.12', 'active': True, 'is_shared': False,
+     'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-x1', 'tag-x3']},
+    {'id': 4, 'description': 'qa-02.02', 'ip_address': '123.12.12.13', 'active': True, 'is_shared': False,
+     'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-x1', 'tag-x2', 'tag-x3']}]
+
 
 @pytest.fixture()
 def project_runners_with_names():
@@ -54,6 +64,7 @@ def project_runners():
         mock_runner.id = project_id
         mock_runners.append(mock_runner)
     return mock_runners
+
 
 @pytest.fixture()
 def project_runners_dict():
