@@ -133,6 +133,7 @@ def test_format_variables(gitlabapi):
     output = gitlabapi.format_variables(variables)
     assert output == expected_output
 
+
 # todo Update this test
 # @mock.patch('gitlab_cli_tool.cli_api.GitLabDataFilter.check_filters')
 # def test_get_filtered_data_WRONG(mock_check_filters, gitlabdatafilter):

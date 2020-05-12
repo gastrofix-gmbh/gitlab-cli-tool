@@ -133,7 +133,14 @@ Pipeline for branch master has been triggered
 https://gitlab.acme.com/smth/dummy-project/pipelines/XXXX
 ```
 #### Running tests
-Use pytest inside docker container to run all or some tests, examples:
+Use pytest to run tests in repository
+
+``` bash
+# runs all tests
+py.test
+```
+
+Or use pytest inside docker container to run all or some tests, examples:
 
 ``` bash
 # runs all tests
