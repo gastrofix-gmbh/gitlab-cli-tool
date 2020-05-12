@@ -20,6 +20,7 @@ class Filtering(Enum):
 class Actions(Enum):
     PAUSE = 'pause'
     RESUME = 'resume'
+    RENAME_TAGS = 'rename_tags'
     LIST = 'list'
     RUN = 'run'
 
@@ -134,6 +135,9 @@ class GitLabDataFilter:
             runners = self.api.change_runners_dict_status(runners, False)
         elif self.action == Actions.RESUME.value:
             runners = self.api.change_runners_dict_status(runners, True)
+        elif self.action == Actions.RENAME_TAGS.value:
+            # rename_tags for runners
+            pass
         runners = self.api.assign_active_jobs_to_runners(runners, self.project_id)
         project_name = self.api.get_project(self.project_id).name
         return self.format_output(runners, project_name)
