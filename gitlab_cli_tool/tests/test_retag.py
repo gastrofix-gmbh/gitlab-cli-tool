@@ -61,3 +61,23 @@ def test_filtering_cases(gitlabdatafilter):
     # all tags which have tag inside
     filtered_runners = gitlabdatafilter.filter_runners(runners, Filtering.TAGS, ['tag'])
     assert expected_runners == filtered_runners
+
+
+def test_ignore_tags(gitlabdatafilter):
+    runners = ALL_INFO_RUNNERS_DICT[:]
+    expected_runners = [
+        {'id': 1, 'description': 'qa-01.01', 'ip_address': '123.12.12.10', 'active': True, 'is_shared': False,
+         'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-x1', 'tag-x2']},
+        {'id': 2, 'description': 'qa-01.02', 'ip_address': '123.12.12.11', 'active': True, 'is_shared': False,
+         'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-x1', 'tag-x2']}]
+    gitlabdatafilter.ignore = ['name', 'qa-02']
+    filtered_runners = gitlabdatafilter.ignore_runners(runners)
+    assert expected_runners == filtered_runners
+    expected_runners = [
+        {'id': 3, 'description': 'qa-02.01', 'ip_address': '123.12.12.12', 'active': True, 'is_shared': False,
+         'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-x1', 'tag-x3']},
+        ]
+    gitlabdatafilter.ignore = ['tag', 'tag-x2']
+    filtered_runners = gitlabdatafilter.ignore_runners(runners)
+    assert expected_runners == filtered_runners
+

@@ -110,7 +110,6 @@ class GitLabDataFilter:
         return new_runners
 
     def ignore_runners(self, runners):
-        runners_to_ignore = []
         if self.ignore[0].lower() == 'tag':
             tags = self.ignore[1:]
             runners_to_ignore = self.filter_runners(runners, Filtering.TAGS, tags)
