@@ -1,4 +1,5 @@
 import os
+import copy
 import tempfile
 from unittest import mock
 from unittest.mock import call
@@ -80,4 +81,33 @@ def test_ignore_tags(gitlabdatafilter):
     gitlabdatafilter.ignore = ['tag', 'tag-x2']
     filtered_runners = gitlabdatafilter.ignore_runners(runners)
     assert expected_runners == filtered_runners
+
+
+
+def test_retag_runners:
+
+    def good_to_retag(runner, tags_to_change):
+        if len(runner['tag_list']) < len(tags_to_change):
+            return False
+        for tag in tags_to_change:
+            if tag not in runner['tag_list']:
+                return False
+        return True
+
+
+
+
+    def retag_single_runner(runner, tags_to_change, new_tags):
+        pass
+
+    def retag_runners(runners, tags_to_change, new_tags):
+        for runner in runners:
+
+
+
+    def main_func():
+        runners = ALL_INFO_RUNNERS_DICT[:]
+
+    main_func()
+
 
