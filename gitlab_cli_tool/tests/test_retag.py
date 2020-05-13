@@ -84,7 +84,7 @@ def test_ignore_tags(gitlabdatafilter):
 
 
 
-def test_retag_runners:
+def test_retag_runners():
 
     def good_to_retag(runner, tags_to_change):
         if len(runner['tag_list']) < len(tags_to_change):
@@ -95,19 +95,16 @@ def test_retag_runners:
         return True
 
 
-
-
     def retag_single_runner(runner, tags_to_change, new_tags):
         pass
 
     def retag_runners(runners, tags_to_change, new_tags):
         for runner in runners:
-
+            pass
 
 
     def main_func():
         runners = ALL_INFO_RUNNERS_DICT[:]
 
     main_func()
-
 
