@@ -83,7 +83,6 @@ def test_ignore_tags(gitlabdatafilter):
     assert expected_runners == filtered_runners
 
 
-
 def test_retag_runners(gitlabdatafilter):
     runners = ALL_INFO_RUNNERS_DICT[:]
     tags_to_change = ['tag-x1']
@@ -101,4 +100,26 @@ def test_retag_runners(gitlabdatafilter):
          'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-TEST', 'tag-x3']},
         {'id': 4, 'description': 'qa-02.02', 'ip_address': '123.12.12.13', 'active': True, 'is_shared': False,
          'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-TEST', 'tag-x2', 'tag-x3']}]
+    assert expected_runners == runners_after_changes
+
+def test_retag_filtered_runners(gitlabdatafilter):
+    expected_runners = [
+        {'id': 1, 'description': 'qa-01.01', 'ip_address': '123.12.12.10', 'active': True, 'is_shared': False,
+         'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-x1', 'tag-x2']},
+        {'id': 2, 'description': 'qa-01.02', 'ip_address': '123.12.12.11', 'active': True, 'is_shared': False,
+         'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-x1', 'tag-x2']}]
+    runners = ALL_INFO_RUNNERS_DICT[:]
+    filtered_runners = gitlabdatafilter.filter_runners(runners, Filtering.NAMES, ['qa-01'])
+    assert expected_runners == filtered_runners
+    tags_to_change = ['tag-x1']
+    new_tags = ['tag-TEST']
+    runners_after_changes = []
+    for runner in filtered_runners:
+        changed, new_runner = gitlabdatafilter.retag_algorithm(runner, tags_to_change, new_tags)
+        runners_after_changes.append(new_runner)
+    expected_runners = [
+        {'id': 1, 'description': 'qa-01.01', 'ip_address': '123.12.12.10', 'active': True, 'is_shared': False,
+         'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-TEST', 'tag-x2']},
+        {'id': 2, 'description': 'qa-01.02', 'ip_address': '123.12.12.11', 'active': True, 'is_shared': False,
+         'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-TEST', 'tag-x2']}]
     assert expected_runners == runners_after_changes
