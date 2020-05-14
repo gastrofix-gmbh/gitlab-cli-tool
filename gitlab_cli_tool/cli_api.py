@@ -166,6 +166,7 @@ class GitLabDataFilter:
                       runner_info[2]['tag_list'])
             else:
                 print(runner_info[1]['description'], "can't change")
+        return runners_after_changes
 
     def ask_for_change(self):
         user_input = input("Do you want to change tags in runners? [Y/N]: ")

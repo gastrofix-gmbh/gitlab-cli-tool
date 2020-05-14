@@ -84,27 +84,21 @@ def test_ignore_tags(gitlabdatafilter):
 
 
 
-def test_retag_runners():
-
-    def good_to_retag(runner, tags_to_change):
-        if len(runner['tag_list']) < len(tags_to_change):
-            return False
-        for tag in tags_to_change:
-            if tag not in runner['tag_list']:
-                return False
-        return True
-
-
-    def retag_single_runner(runner, tags_to_change, new_tags):
-        pass
-
-    def retag_runners(runners, tags_to_change, new_tags):
-        for runner in runners:
-            pass
-
-
-    def main_func():
-        runners = ALL_INFO_RUNNERS_DICT[:]
-
-    main_func()
-
+def test_retag_runners(gitlabdatafilter):
+    runners = ALL_INFO_RUNNERS_DICT[:]
+    tags_to_change = ['tag-x1']
+    new_tags = ['tag-TEST']
+    runners_after_changes = []
+    for runner in runners:
+        changed, new_runner = gitlabdatafilter.retag_algorithm(runner, tags_to_change, new_tags)
+        runners_after_changes.append(new_runner)
+    expected_runners = [
+        {'id': 1, 'description': 'qa-01.01', 'ip_address': '123.12.12.10', 'active': True, 'is_shared': False,
+         'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-TEST', 'tag-x2']},
+        {'id': 2, 'description': 'qa-01.02', 'ip_address': '123.12.12.11', 'active': True, 'is_shared': False,
+         'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-TEST', 'tag-x2']},
+        {'id': 3, 'description': 'qa-02.01', 'ip_address': '123.12.12.12', 'active': True, 'is_shared': False,
+         'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-TEST', 'tag-x3']},
+        {'id': 4, 'description': 'qa-02.02', 'ip_address': '123.12.12.13', 'active': True, 'is_shared': False,
+         'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-TEST', 'tag-x2', 'tag-x3']}]
+    assert expected_runners == runners_after_changes
