@@ -27,7 +27,9 @@ class GitLabCLI:
 
         parser.add_argument('action', help='What to do with property, list, pause, resume',
                             choices=[action.value for action in Actions],
-                            default='list')
+                            default='list',
+                            )
+        # TODO figure out commands for retaging with arguments
         parser.add_argument('-b', '--branch', help='Triggering by branch name', nargs=1)
         parser.add_argument('-t', '--tag', help='Filtering by tags', nargs='+')
         parser.add_argument('-n', '--name', help='Filtering by name', nargs='+')

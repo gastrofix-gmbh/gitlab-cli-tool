@@ -10,3 +10,30 @@
 
 # 2020-05-12 16:51:25.556403
 +runners list --name qa-01 --ignore name qa
+
+# 2020-05-14 14:06:32.981025
++runners rename_tags --name qa-01
+
+# 2020-05-14 14:07:13.609498
++runners rename_tags --name qa-01 --ignore name qa-01.01
+
+# 2020-05-14 14:28:07.661323
++runners list --tag atf-jq
+
+# 2020-05-14 14:28:13.456746
++runners list --tag atf-jq qa
+
+# 2020-05-14 14:28:45.678952
++runners list --tag atf-jq
+
+# 2020-05-14 14:29:08.178200
++runners retag [lol] [elo] --tag atf-jq
+
+# 2020-05-14 14:29:27.867208
++runners retag 123 321 --tag atf-jq
+
+# 2020-05-14 14:29:52.291813
++runners retag --tag atf-jq
+
+# 2020-05-14 14:33:07.176620
++runners retag 123 123 --tag atf-jq

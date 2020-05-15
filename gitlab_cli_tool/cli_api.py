@@ -21,7 +21,7 @@ class Filtering(Enum):
 class Actions(Enum):
     PAUSE = 'pause'
     RESUME = 'resume'
-    RENAME_TAGS = 'rename_tags'
+    retag = 'retag'
     LIST = 'list'
     RUN = 'run'
 
@@ -135,9 +135,9 @@ class GitLabDataFilter:
             runners = self.api.change_runners_dict_status(runners, False)
         elif self.action == Actions.RESUME.value:
             runners = self.api.change_runners_dict_status(runners, True)
-        elif self.action == Actions.RENAME_TAGS.value:
-            # rename_tags for runners
-            pass
+        elif self.action == Actions.retag.value:
+            print("retagging...")
+            runners = self.retag_runners(runners)
         runners = self.api.assign_active_jobs_to_runners(runners, self.project_id)
         project_name = self.api.get_project(self.project_id).name
         return self.format_output(runners, project_name)
@@ -150,14 +150,29 @@ class GitLabDataFilter:
         elif self.property_name == PropertyName.PIPELINE.value:
             return self.api.run_pipeline(self.branch, self.project_id, self.variables)
 
-    def retag_runners(self, runners, tags_to_change, new_tags):
+    def valid_retag_params(self):
+        """
+        Checking if users put 2 arrays of tags as input after command retag
+        EXAMPLE:
+        runners retag ['tag1', 'tag2'] ['tag3', 'tag4']
+        :return:
+        """
+        print(self.action)
+        return False
+
+    def retag_runners(self, runners):
+        if not self.valid_retag_params():
+            raise RuntimeError("Wrong retag arguments. HINT: runners retag ['tag1', 'tag2'] ['tag3', 'tag4'] ...")
+        tags_to_change = []
+        new_tags = []
         runners_after_changes = []
         for runner in runners:
             changed, new_runner = self.retag_algorithm(runner, tags_to_change, new_tags)
             runners_after_changes.append((changed, runner, new_runner))
         self.inform_user_about_changes(runners_after_changes)
         if self.ask_for_change():
-            self.commit_changes_to_runners(runners_after_changes)
+            self.commit_changes_to_runners([runner[2] for runner in runners_after_changes if runner[0]])
+        return [runner[2] for runner in runners_after_changes]
 
     def inform_user_about_changes(self, runners_after_changes):
         for runner_info in runners_after_changes:
@@ -166,7 +181,6 @@ class GitLabDataFilter:
                       runner_info[2]['tag_list'])
             else:
                 print(runner_info[1]['description'], "can't change")
-        return runners_after_changes
 
     def ask_for_change(self):
         user_input = input("Do you want to change tags in runners? [Y/N]: ")
@@ -176,9 +190,9 @@ class GitLabDataFilter:
         return False
 
     def commit_changes_to_runners(self, runners_after_changes):
-        # TODO
         print("Changing runners...")
-        pass
+        self.api.change_runners_dict_tags(runners_after_changes)
+        return runners_after_changes
 
     def retag_algorithm(self, runner, old_tags, new_tags):
         to_retag, msg = self.good_to_retag(runner, old_tags, new_tags)
@@ -428,3 +442,20 @@ class GitlabAPI:
                     print(f'Runner {runner["id"]} cannot be paused because of {err}')
 
         return runners
+
+    def change_runners_dict_tags(self, runners_after_changes: List[dict]) -> List[dict]:
+        """
+        Function which commits changes to runners tags
+        :param runners_after_changes: List of runners [dict]
+        :return: List of runners [dict]
+        """
+        for runner in runners_after_changes:
+            try:
+                url = f'{self.server}/api/v4/runners/{runner["id"]}'
+                payload = {'tag_list': runner['tag_list']}
+                response = requests.put(url, headers=self.headers, data=payload)
+                response.raise_for_status()
+                print(f'Runner id: {runner["id"]} tags changed.')
+            except Exception as err:
+                print(f'Runner {runner["id"]} cannot be changed because of {err}')
+        return runners_after_changes
