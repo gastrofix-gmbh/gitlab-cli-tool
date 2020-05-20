@@ -37,3 +37,123 @@
 
 # 2020-05-14 14:33:07.176620
 +runners retag 123 123 --tag atf-jq
+
+# 2020-05-20 12:25:30.959897
++tags lol:lol1,lol2:lol3 --name
+
+# 2020-05-20 12:25:35.390042
++tags lol:lol1,lol2:lol3 --name qa
+
+# 2020-05-20 12:32:41.580225
++runners retag 123 123 --tag atf-jq
+
+# 2020-05-20 12:34:00.328647
++runners list --tag atf-jq
+
+# 2020-05-20 12:35:40.314919
++runners retag 123 123 --tag atf-jq
+
+# 2020-05-20 12:41:12.449352
++runners list
+
+# 2020-05-20 12:44:38.938691
++runners retag 123 123 --tag atf-jq
+
+# 2020-05-20 12:44:53.182264
++runnes list list
+
+# 2020-05-20 12:44:58.897631
++runnres list list
+
+# 2020-05-20 12:45:02.799600
++runners list list
+
+# 2020-05-20 12:48:18.737510
++runners list --tag
+
+# 2020-05-20 12:48:23.204088
++runners list --tag atf
+
+# 2020-05-20 12:48:34.328027
++runners retag 123:123
+
+# 2020-05-20 12:52:18.732938
++runners  list --name
+
+# 2020-05-20 12:52:20.890409
++runners  list --name atf
+
+# 2020-05-20 12:52:26.793451
++runners  list --name qa
+
+# 2020-05-20 12:52:42.817837
++runners  list --name qa --ignore tag atf-test
+
+# 2020-05-20 12:54:13.861259
++runnerst retag old1:new1,old2:new2
+
+# 2020-05-20 12:54:20.566320
++runners retag old1:new1,old2:new2
+
+# 2020-05-20 13:05:02.938664
++runners retag old1:new1,old2:new2,21
+
+# 2020-05-20 14:50:29.247877
++runners retag old1:new1,old2:new2
+
+# 2020-05-20 15:00:34.787310
++runners list --tag atf
+
+# 2020-05-20 15:00:43.786767
++runners list --tag atf-jq
+
+# 2020-05-20 15:01:22.276113
++runners retag atf-jq:atf-jq2 --tag atf-jq
+
+# 2020-05-20 15:02:33.208206
++runner list --tag atf
+
+# 2020-05-20 15:02:38.537087
++runners list --tag atf
+
+# 2020-05-20 15:03:18.078424
++runners list --name qa-01
+
+# 2020-05-20 15:06:32.912402
++runners retag atf-jq:atf-jq2 --tag atf-jq
+
+# 2020-05-20 15:10:34.501582
++runnert list --name qa-01
+
+# 2020-05-20 15:10:37.558515
++runners list --name qa-01
+
+# 2020-05-20 15:11:23.728345
++runners retag atf-jq:atf-jqTEST --tag atf-jq
+
+# 2020-05-20 15:13:36.084982
++runners list --name qa-01.01
+
+# 2020-05-20 15:14:04.730011
++runners retag atf-jq:test-tag-name --name qa-01.01
+
+# 2020-05-20 15:14:16.825598
++runners list --name qa-01.01
+
+# 2020-05-20 15:14:43.484562
++runners retag qa-01.01:test_tag --name qa-01.01
+
+# 2020-05-20 15:14:53.670392
++runners list --name qa-01.01
+
+# 2020-05-20 15:17:10.272237
++runners retag atf-jq:test_tag,qa-01.01:test2 --name qa-01.01
+
+# 2020-05-20 15:17:24.659547
++runner list --name qa-01
+
+# 2020-05-20 15:17:27.945628
++runners list --name qa-01
+
+# 2020-05-20 15:20:10.191247
++runners retag atf-jq:test_tag,qa-01.01:test2 --name qa-01.01

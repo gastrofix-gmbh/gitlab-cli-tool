@@ -21,9 +21,9 @@ class Filtering(Enum):
 class Actions(Enum):
     PAUSE = 'pause'
     RESUME = 'resume'
-    retag = 'retag'
     LIST = 'list'
     RUN = 'run'
+    RETAG = 'retag'
 
 
 class PropertyName(Enum):
@@ -131,12 +131,11 @@ class GitLabDataFilter:
         return runners
 
     def make_action_on_runners(self, runners):
-        if self.action == Actions.PAUSE.value:
+        if self.action[0] == Actions.PAUSE.value:
             runners = self.api.change_runners_dict_status(runners, False)
-        elif self.action == Actions.RESUME.value:
+        elif self.action[0] == Actions.RESUME.value:
             runners = self.api.change_runners_dict_status(runners, True)
-        elif self.action == Actions.retag.value:
-            print("retagging...")
+        elif self.action[0] == Actions.RETAG.value:
             runners = self.retag_runners(runners)
         runners = self.api.assign_active_jobs_to_runners(runners, self.project_id)
         project_name = self.api.get_project(self.project_id).name
@@ -150,24 +149,37 @@ class GitLabDataFilter:
         elif self.property_name == PropertyName.PIPELINE.value:
             return self.api.run_pipeline(self.branch, self.project_id, self.variables)
 
-    def valid_retag_params(self):
+    def valid_retag_params(self) -> bool:
         """
-        Checking if users put 2 arrays of tags as input after command retag
+        Checking if users put correct retag params
         EXAMPLE:
-        runners retag ['tag1', 'tag2'] ['tag3', 'tag4']
-        :return:
+        runners retag old1:new1,old2:new2
+        :return: BOOL
         """
-        print(self.action)
-        return False
+        if not (self.action[0] == Actions.RETAG.value):
+            return False
+        pairs = self.action[1].split(',')
+        for pair in pairs:
+            if not self.correct_retag_pair(pair):
+                return False
+        return True
+
+    @staticmethod
+    def correct_retag_pair(pair):
+        return len(pair.split(':')) == 2
+
+    def get_tags_to_change(self):
+        tags_to_change = self.action[1].split(',')
+        return [pair.split(':') for pair in tags_to_change]
+
 
     def retag_runners(self, runners):
         if not self.valid_retag_params():
-            raise RuntimeError("Wrong retag arguments. HINT: runners retag ['tag1', 'tag2'] ['tag3', 'tag4'] ...")
-        tags_to_change = []
-        new_tags = []
+            raise RuntimeError("Wrong retag arguments. HINT: runners retag old1:new1,old2:new2 ...")
+        tags_to_change = self.get_tags_to_change()
         runners_after_changes = []
         for runner in runners:
-            changed, new_runner = self.retag_algorithm(runner, tags_to_change, new_tags)
+            changed, new_runner = self.retag_algorithm(runner, tags_to_change)
             runners_after_changes.append((changed, runner, new_runner))
         self.inform_user_about_changes(runners_after_changes)
         if self.ask_for_change():
@@ -194,40 +206,70 @@ class GitLabDataFilter:
         self.api.change_runners_dict_tags(runners_after_changes)
         return runners_after_changes
 
-    def retag_algorithm(self, runner, old_tags, new_tags):
-        to_retag, msg = self.good_to_retag(runner, old_tags, new_tags)
-        if not to_retag:
-            print(msg)
-            return False, runner
-        length = max(len(old_tags), len(new_tags))
-        i = 0
+    def retag_algorithm(self, runner, tags_to_change):
         runner_after_changes = copy.deepcopy(runner)
-        while i < length:
-            # case 1 renamer tag
-            if i < len(old_tags) and i < len(new_tags):
-                index_to_rename = runner_after_changes['tag_list'].index(old_tags[i])
-                if index_to_rename < 0:
-                    print(f"{old_tags[i]} not found in {runner_after_changes['tag_list']}")
-                    return False, runner
-                runner_after_changes['tag_list'][index_to_rename] = new_tags[i]
-            # case 2 add new tags
-            elif len(old_tags) <= i < len(new_tags):
-                runner_after_changes['tag_list'].append(new_tags[i])
-            # case 3 remove tags
-            elif len(new_tags) <= i < len(old_tags):
-                runner_after_changes['tag_list'].remove(old_tags[i])
-            i += 1
+        for pair in tags_to_change:
+            index_to_rename = runner_after_changes['tag_list'].index(pair[0])
+            if index_to_rename < 0:
+                print(f"{pair[0]} not found in {runner_after_changes['tag_list']}")
+                return False, runner
+            runner_after_changes['tag_list'][index_to_rename] = pair[1]
         return True, runner_after_changes
 
-    def good_to_retag(self, runner, tags_to_change, new_tags):
-        if len(runner['tag_list']) < len(tags_to_change):
-            return False, f"There are more tags to change than tags in {runner['description']} runner."
-        for tag in tags_to_change:
-            if tag not in runner['tag_list']:
-                return False, f"{tag} not found in {runner['description']} runner"
-        if self.no_duplicates(tags_to_change) and self.no_duplicates(new_tags):
-            return True, ''
-        return False, 'Duplicates in tags.'
+        # length = max(len(old_tags), len(new_tags))
+        # i = 0
+        # runner_after_changes = copy.deepcopy(runner)
+        # while i < length:
+        #     # case 1 renamer tag
+        #     if i < len(old_tags) and i < len(new_tags):
+        #         index_to_rename = runner_after_changes['tag_list'].index(old_tags[i])
+        #         if index_to_rename < 0:
+        #             print(f"{old_tags[i]} not found in {runner_after_changes['tag_list']}")
+        #             return False, runner
+        #         runner_after_changes['tag_list'][index_to_rename] = new_tags[i]
+        #     # case 2 add new tags
+        #     elif len(old_tags) <= i < len(new_tags):
+        #         runner_after_changes['tag_list'].append(new_tags[i])
+        #     # case 3 remove tags
+        #     elif len(new_tags) <= i < len(old_tags):
+        #         runner_after_changes['tag_list'].remove(old_tags[i])
+        #     i += 1
+        # return True, runner_after_changes
+
+    # def retag_algorithm(self, runner, old_tags, new_tags):
+    #     to_retag, msg = self.good_to_retag(runner, old_tags, new_tags)
+    #     if not to_retag:
+    #         print(msg)
+    #         return False, runner
+    #     length = max(len(old_tags), len(new_tags))
+    #     i = 0
+    #     runner_after_changes = copy.deepcopy(runner)
+    #     while i < length:
+    #         # case 1 renamer tag
+    #         if i < len(old_tags) and i < len(new_tags):
+    #             index_to_rename = runner_after_changes['tag_list'].index(old_tags[i])
+    #             if index_to_rename < 0:
+    #                 print(f"{old_tags[i]} not found in {runner_after_changes['tag_list']}")
+    #                 return False, runner
+    #             runner_after_changes['tag_list'][index_to_rename] = new_tags[i]
+    #         # case 2 add new tags
+    #         elif len(old_tags) <= i < len(new_tags):
+    #             runner_after_changes['tag_list'].append(new_tags[i])
+    #         # case 3 remove tags
+    #         elif len(new_tags) <= i < len(old_tags):
+    #             runner_after_changes['tag_list'].remove(old_tags[i])
+    #         i += 1
+    #     return True, runner_after_changes
+
+    # def good_to_retag(self, runner, tags_to_change, new_tags):
+    #     if len(runner['tag_list']) < len(tags_to_change):
+    #         return False, f"There are more tags to change than tags in {runner['description']} runner."
+    #     for tag in tags_to_change:
+    #         if tag not in runner['tag_list']:
+    #             return False, f"{tag} not found in {runner['description']} runner"
+    #     if self.no_duplicates(tags_to_change) and self.no_duplicates(new_tags):
+    #         return True, ''
+    #     return False, 'Duplicates in tags.'
 
     @staticmethod
     def no_duplicates(tags):
@@ -452,7 +494,7 @@ class GitlabAPI:
         for runner in runners_after_changes:
             try:
                 url = f'{self.server}/api/v4/runners/{runner["id"]}'
-                payload = {'tag_list': runner['tag_list']}
+                payload = {'tag_list': ','.join(runner['tag_list'])}
                 response = requests.put(url, headers=self.headers, data=payload)
                 response.raise_for_status()
                 print(f'Runner id: {runner["id"]} tags changed.')
