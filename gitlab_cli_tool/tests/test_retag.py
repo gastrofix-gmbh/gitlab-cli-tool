@@ -82,15 +82,20 @@ def test_ignore_tags(gitlabdatafilter):
     filtered_runners = gitlabdatafilter.ignore_runners(runners)
     assert expected_runners == filtered_runners
 
+def test_get_tags_to_change(gitlabdatafilter):
+    gitlabdatafilter.action = ['retag', 'atf-jq:test_tag,qa-01.01:test2']
+    formated_tags = gitlabdatafilter.get_tags_to_change()
+    expected_tags = [['atf-jq', 'test_tag'], ['qa-01.01', 'test2']]
+    assert formated_tags == expected_tags
 
 def test_retag_runners(gitlabdatafilter):
     runners = ALL_INFO_RUNNERS_DICT[:]
-    tags_to_change = ['tag-x1']
-    new_tags = ['tag-TEST']
+    gitlabdatafilter.action = ['retag', 'tag-x1:tag-TEST']
+    tags_to_change = gitlabdatafilter.get_tags_to_change()
     runners_after_changes = []
     for runner in runners:
-        changed, new_runner = gitlabdatafilter.retag_algorithm(runner, tags_to_change, new_tags)
-        runners_after_changes.append(new_runner)
+        changed, new_runner = gitlabdatafilter.retag_algorithm(runner, tags_to_change)
+        runners_after_changes.append((changed, runner, new_runner))
     expected_runners = [
         {'id': 1, 'description': 'qa-01.01', 'ip_address': '123.12.12.10', 'active': True, 'is_shared': False,
          'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-TEST', 'tag-x2']},
@@ -100,7 +105,7 @@ def test_retag_runners(gitlabdatafilter):
          'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-TEST', 'tag-x3']},
         {'id': 4, 'description': 'qa-02.02', 'ip_address': '123.12.12.13', 'active': True, 'is_shared': False,
          'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-TEST', 'tag-x2', 'tag-x3']}]
-    assert expected_runners == runners_after_changes
+    assert expected_runners == [runner[2] for runner in runners_after_changes]
 
 def test_retag_filtered_runners(gitlabdatafilter):
     expected_runners = [
@@ -111,18 +116,18 @@ def test_retag_filtered_runners(gitlabdatafilter):
     runners = ALL_INFO_RUNNERS_DICT[:]
     filtered_runners = gitlabdatafilter.filter_runners(runners, Filtering.NAMES, ['qa-01'])
     assert expected_runners == filtered_runners
-    tags_to_change = ['tag-x1']
-    new_tags = ['tag-TEST']
+    gitlabdatafilter.action = ['retag', 'tag-x1:tag-TEST']
+    tags_to_change = gitlabdatafilter.get_tags_to_change()
     runners_after_changes = []
     for runner in filtered_runners:
-        changed, new_runner = gitlabdatafilter.retag_algorithm(runner, tags_to_change, new_tags)
-        runners_after_changes.append(new_runner)
+        changed, new_runner = gitlabdatafilter.retag_algorithm(runner, tags_to_change)
+        runners_after_changes.append((changed, runner, new_runner))
     expected_runners = [
         {'id': 1, 'description': 'qa-01.01', 'ip_address': '123.12.12.10', 'active': True, 'is_shared': False,
          'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-TEST', 'tag-x2']},
         {'id': 2, 'description': 'qa-01.02', 'ip_address': '123.12.12.11', 'active': True, 'is_shared': False,
          'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-TEST', 'tag-x2']}]
-    assert expected_runners == runners_after_changes
+    assert expected_runners == [runner[2] for runner in runners_after_changes]
 
 
 def test_retag_all_cases(gitlabdatafilter):
