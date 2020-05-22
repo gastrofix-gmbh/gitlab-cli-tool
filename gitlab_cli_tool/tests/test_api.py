@@ -23,7 +23,7 @@ from gitlab_cli_tool.tests.conftest import (
 def test_parser_names():
     parsed_args = GitLabCLI.parse_args(CORRECT_CLI_ARGUMENTS)
     assert parsed_args.property_name == 'runners'
-    assert parsed_args.action == 'list'
+    assert parsed_args.action ==['list']
     assert parsed_args.tag == ['atf']
 
 

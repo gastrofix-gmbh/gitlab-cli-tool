@@ -172,7 +172,6 @@ class GitLabDataFilter:
         tags_to_change = self.action[1].split(',')
         return [pair.split(':') for pair in tags_to_change]
 
-
     def retag_runners(self, runners):
         if not self.valid_retag_params():
             raise RuntimeError("Wrong retag arguments. HINT: runners retag old1:new1,old2:new2 ...")
