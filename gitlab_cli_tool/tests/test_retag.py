@@ -128,7 +128,3 @@ def test_retag_filtered_runners(gitlabdatafilter):
         {'id': 2, 'description': 'qa-01.02', 'ip_address': '123.12.12.11', 'active': True, 'is_shared': False,
          'name': 'gitlab-runner', 'online': True, 'status': 'online', 'tag_list': ['tag-TEST', 'tag-x2']}]
     assert expected_runners == [runner[2] for runner in runners_after_changes]
-
-
-def test_retag_all_cases(gitlabdatafilter):
-    pass

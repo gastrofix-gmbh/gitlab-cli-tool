@@ -215,61 +215,6 @@ class GitLabDataFilter:
             runner_after_changes['tag_list'][index_to_rename] = pair[1]
         return True, runner_after_changes
 
-        # length = max(len(old_tags), len(new_tags))
-        # i = 0
-        # runner_after_changes = copy.deepcopy(runner)
-        # while i < length:
-        #     # case 1 renamer tag
-        #     if i < len(old_tags) and i < len(new_tags):
-        #         index_to_rename = runner_after_changes['tag_list'].index(old_tags[i])
-        #         if index_to_rename < 0:
-        #             print(f"{old_tags[i]} not found in {runner_after_changes['tag_list']}")
-        #             return False, runner
-        #         runner_after_changes['tag_list'][index_to_rename] = new_tags[i]
-        #     # case 2 add new tags
-        #     elif len(old_tags) <= i < len(new_tags):
-        #         runner_after_changes['tag_list'].append(new_tags[i])
-        #     # case 3 remove tags
-        #     elif len(new_tags) <= i < len(old_tags):
-        #         runner_after_changes['tag_list'].remove(old_tags[i])
-        #     i += 1
-        # return True, runner_after_changes
-
-    # def retag_algorithm(self, runner, old_tags, new_tags):
-    #     to_retag, msg = self.good_to_retag(runner, old_tags, new_tags)
-    #     if not to_retag:
-    #         print(msg)
-    #         return False, runner
-    #     length = max(len(old_tags), len(new_tags))
-    #     i = 0
-    #     runner_after_changes = copy.deepcopy(runner)
-    #     while i < length:
-    #         # case 1 renamer tag
-    #         if i < len(old_tags) and i < len(new_tags):
-    #             index_to_rename = runner_after_changes['tag_list'].index(old_tags[i])
-    #             if index_to_rename < 0:
-    #                 print(f"{old_tags[i]} not found in {runner_after_changes['tag_list']}")
-    #                 return False, runner
-    #             runner_after_changes['tag_list'][index_to_rename] = new_tags[i]
-    #         # case 2 add new tags
-    #         elif len(old_tags) <= i < len(new_tags):
-    #             runner_after_changes['tag_list'].append(new_tags[i])
-    #         # case 3 remove tags
-    #         elif len(new_tags) <= i < len(old_tags):
-    #             runner_after_changes['tag_list'].remove(old_tags[i])
-    #         i += 1
-    #     return True, runner_after_changes
-
-    # def good_to_retag(self, runner, tags_to_change, new_tags):
-    #     if len(runner['tag_list']) < len(tags_to_change):
-    #         return False, f"There are more tags to change than tags in {runner['description']} runner."
-    #     for tag in tags_to_change:
-    #         if tag not in runner['tag_list']:
-    #             return False, f"{tag} not found in {runner['description']} runner"
-    #     if self.no_duplicates(tags_to_change) and self.no_duplicates(new_tags):
-    #         return True, ''
-    #     return False, 'Duplicates in tags.'
-
     @staticmethod
     def no_duplicates(tags):
         return len(tags) == len(set(tags))
