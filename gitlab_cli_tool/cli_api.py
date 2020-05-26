@@ -98,9 +98,9 @@ class GitLabDataFilter:
         return self.api.run_pipeline(self.branch, self.project_id, self.variables)
 
     def filter_runners(self, current_runners, filter_name, filter_values):
-        if filter_name.value == Filtering.NAMES.value:
+        if filter_name == Filtering.NAMES:
             return self.api.filter_by_names_dict(current_runners, filter_values)
-        elif filter_name.value == Filtering.TAGS.value:
+        elif filter_name == Filtering.TAGS:
             return self.api.get_projects_filtered_runners_by_tags(current_runners, filter_values)
 
     def relative_complement_of_runners(self, runners, runners_to_ignore):
