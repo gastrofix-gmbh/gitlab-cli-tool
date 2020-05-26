@@ -41,6 +41,8 @@ pip3 install -r requirements.txt
 ```
 #### 2.2 Run script
 ```python -m gitlab_cli_tool.run.py```
+<br/> or <br/>
+```PYTHONPATH=. python gitlab_cli_tool/run.py```
 
 
 ## Usage
@@ -133,7 +135,14 @@ Pipeline for branch master has been triggered
 https://gitlab.acme.com/smth/dummy-project/pipelines/XXXX
 ```
 #### Running tests
-Use pytest inside docker container to run all or some tests, examples:
+Use pytest to run tests in repository
+
+``` bash
+# runs all tests
+py.test
+```
+
+Or use pytest inside docker container to run all or some tests, examples:
 
 ``` bash
 # runs all tests

@@ -1,4 +1,5 @@
 import asyncio
+import copy
 import os
 from enum import Enum
 from typing import List, Dict, Union
@@ -22,6 +23,7 @@ class Actions(Enum):
     RESUME = 'resume'
     LIST = 'list'
     RUN = 'run'
+    RETAG = 'retag'
 
 
 class PropertyName(Enum):
@@ -95,10 +97,10 @@ class GitLabDataFilter:
     def run_pipeline(self):
         return self.api.run_pipeline(self.branch, self.project_id, self.variables)
 
-    def filter_runners(self, current_runners, filter, filter_values):
-        if filter == Filtering.NAMES:
+    def filter_runners(self, current_runners, filter_name, filter_values):
+        if filter_name == Filtering.NAMES:
             return self.api.filter_by_names_dict(current_runners, filter_values)
-        elif filter == Filtering.TAGS:
+        elif filter_name == Filtering.TAGS:
             return self.api.get_projects_filtered_runners_by_tags(current_runners, filter_values)
 
     def relative_complement_of_runners(self, runners, runners_to_ignore):
@@ -109,7 +111,6 @@ class GitLabDataFilter:
         return new_runners
 
     def ignore_runners(self, runners):
-        runners_to_ignore = []
         if self.ignore[0].lower() == 'tag':
             tags = self.ignore[1:]
             runners_to_ignore = self.filter_runners(runners, Filtering.TAGS, tags)
@@ -130,10 +131,12 @@ class GitLabDataFilter:
         return runners
 
     def make_action_on_runners(self, runners):
-        if self.action == Actions.PAUSE.value:
+        if self.action[0] == Actions.PAUSE.value:
             runners = self.api.change_runners_dict_status(runners, False)
-        elif self.action == Actions.RESUME.value:
+        elif self.action[0] == Actions.RESUME.value:
             runners = self.api.change_runners_dict_status(runners, True)
+        elif self.action[0] == Actions.RETAG.value:
+            runners = self.retag_runners(runners)
         runners = self.api.assign_active_jobs_to_runners(runners, self.project_id)
         project_name = self.api.get_project(self.project_id).name
         return self.format_output(runners, project_name)
@@ -145,6 +148,79 @@ class GitLabDataFilter:
             return self.make_action_on_runners(runners)
         elif self.property_name == PropertyName.PIPELINE.value:
             return self.api.run_pipeline(self.branch, self.project_id, self.variables)
+
+    def valid_retag_params(self) -> bool:
+        """
+        Checking if users put correct retag params
+        EXAMPLE:
+        runners retag old1:new1,old2:new2
+        :return: BOOL
+        """
+        if not (self.action[0] == Actions.RETAG.value):
+            return False
+        pairs = self.action[1].split(',')
+        for pair in pairs:
+            if not self.correct_retag_pair(pair):
+                return False
+        return True
+
+    @staticmethod
+    def correct_retag_pair(pair):
+        return len(pair.split(':')) == 2
+
+    def get_tags_to_change(self):
+        tags_to_change = self.action[1].split(',')
+        return [pair.split(':') for pair in tags_to_change]
+
+    def retag_runners(self, runners):
+        if not self.valid_retag_params():
+            raise RuntimeError("Wrong retag arguments. HINT: runners retag old1:new1,old2:new2 ...")
+        tags_to_change = self.get_tags_to_change()
+        runners_after_changes = []
+        for runner in runners:
+            changed, new_runner = self.retag_algorithm(runner, tags_to_change)
+            runners_after_changes.append((changed, runner, new_runner))
+        self.inform_user_about_changes(runners_after_changes)
+        if self.ask_for_change():
+            self.commit_changes_to_runners([new_runner for changed, runner, new_runner in runners_after_changes if changed])
+        return [new_runner for changed, runner, new_runner in runners_after_changes]
+
+
+    @staticmethod
+    def inform_user_about_changes(runners_after_changes):
+        for changed, runner, new_runner in runners_after_changes:
+            if changed:
+                print(runner['description'], 'changes: ', runner['tag_list'], ' -> ',
+                      new_runner['tag_list'])
+            else:
+                print(runner['description'], "can't change")
+
+    def ask_for_change(self):
+        user_input = input("Do you want to change tags in runners? [Y/N]: ")
+        if user_input.lower() in ['y', 'ye', 'yes']:
+            return True
+        print("Changes canceled.")
+        return False
+
+    def commit_changes_to_runners(self, runners_after_changes):
+        print("Changing runners...")
+        self.api.change_runners_dict_tags(runners_after_changes)
+        return runners_after_changes
+
+    @staticmethod
+    def retag_algorithm(runner, tags_to_change):
+        runner_after_changes = copy.deepcopy(runner)
+        for old_tag, new_tag in tags_to_change:
+            index_to_rename = runner_after_changes['tag_list'].index(old_tag)
+            if index_to_rename < 0:
+                print(f"{old_tag} not found in {runner_after_changes['tag_list']}")
+                return False, runner
+            runner_after_changes['tag_list'][index_to_rename] = new_tag
+        return True, runner_after_changes
+
+    @staticmethod
+    def no_duplicates(tags):
+        return len(tags) == len(set(tags))
 
 
 class GitlabAPI:
@@ -355,3 +431,20 @@ class GitlabAPI:
                     print(f'Runner {runner["id"]} cannot be paused because of {err}')
 
         return runners
+
+    def change_runners_dict_tags(self, runners_after_changes: List[dict]) -> List[dict]:
+        """
+        Function which commits changes to runners tags
+        :param runners_after_changes: List of runners [dict]
+        :return: List of runners [dict]
+        """
+        for runner in runners_after_changes:
+            try:
+                url = f'{self.server}/api/v4/runners/{runner["id"]}'
+                payload = {'tag_list': ','.join(runner['tag_list'])}
+                response = requests.put(url, headers=self.headers, data=payload)
+                response.raise_for_status()
+                print(f'Runner id: {runner["id"]} tags changed.')
+            except Exception as err:
+                print(f'Runner {runner["id"]} cannot be changed because of {err}')
+        return runners_after_changes

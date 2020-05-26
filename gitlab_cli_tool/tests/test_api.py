@@ -23,7 +23,7 @@ from gitlab_cli_tool.tests.conftest import (
 def test_parser_names():
     parsed_args = GitLabCLI.parse_args(CORRECT_CLI_ARGUMENTS)
     assert parsed_args.property_name == 'runners'
-    assert parsed_args.action == 'list'
+    assert parsed_args.action ==['list']
     assert parsed_args.tag == ['atf']
 
 
@@ -132,6 +132,7 @@ def test_format_variables(gitlabapi):
     expected_output = {'var1': '1', 'var2': '2'}
     output = gitlabapi.format_variables(variables)
     assert output == expected_output
+
 
 # todo Update this test
 # @mock.patch('gitlab_cli_tool.cli_api.GitLabDataFilter.check_filters')

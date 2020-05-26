@@ -26,8 +26,9 @@ class GitLabCLI:
                             default='runners')
 
         parser.add_argument('action', help='What to do with property, list, pause, resume',
-                            choices=[action.value for action in Actions],
-                            default='list')
+                            default='list',
+                            nargs='*',
+                            )
         parser.add_argument('-b', '--branch', help='Triggering by branch name', nargs=1)
         parser.add_argument('-t', '--tag', help='Filtering by tags', nargs='+')
         parser.add_argument('-n', '--name', help='Filtering by name', nargs='+')
@@ -59,6 +60,13 @@ class GitLabCLI:
             if not self.check_variables():
                 raise RuntimeError(
                     f'Variables passed have wrong format. Expected format: key=value Actual: {self.variables}')
+        if len(self.action) > 1:
+            if self.action[0] != Actions.RETAG.value:
+                print(f"{self.action[0]} can't have more arguments")
+                return False
+        if len(self.action) > 2:
+            print("Wrong arguments")
+            return False
         return True
 
     def assign_args_to_cli(self, args):
