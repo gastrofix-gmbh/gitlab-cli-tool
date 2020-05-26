@@ -182,16 +182,18 @@ class GitLabDataFilter:
             runners_after_changes.append((changed, runner, new_runner))
         self.inform_user_about_changes(runners_after_changes)
         if self.ask_for_change():
-            self.commit_changes_to_runners([runner[2] for runner in runners_after_changes if runner[0]])
-        return [runner[2] for runner in runners_after_changes]
+            self.commit_changes_to_runners([new_runner for changed, runner, new_runner in runners_after_changes if changed])
+        return [new_runner for changed, runner, new_runner in runners_after_changes]
 
-    def inform_user_about_changes(self, runners_after_changes):
-        for runner_info in runners_after_changes:
-            if runner_info[0]:
-                print(runner_info[1]['description'], 'changes: ', runner_info[1]['tag_list'], ' -> ',
-                      runner_info[2]['tag_list'])
+
+    @staticmethod
+    def inform_user_about_changes(runners_after_changes):
+        for changed, runner, new_runner in runners_after_changes:
+            if changed:
+                print(runner['description'], 'changes: ', runner['tag_list'], ' -> ',
+                      new_runner['tag_list'])
             else:
-                print(runner_info[1]['description'], "can't change")
+                print(runner['description'], "can't change")
 
     def ask_for_change(self):
         user_input = input("Do you want to change tags in runners? [Y/N]: ")
@@ -205,14 +207,15 @@ class GitLabDataFilter:
         self.api.change_runners_dict_tags(runners_after_changes)
         return runners_after_changes
 
-    def retag_algorithm(self, runner, tags_to_change):
+    @staticmethod
+    def retag_algorithm(runner, tags_to_change):
         runner_after_changes = copy.deepcopy(runner)
-        for pair in tags_to_change:
-            index_to_rename = runner_after_changes['tag_list'].index(pair[0])
+        for old_tag, new_tag in tags_to_change:
+            index_to_rename = runner_after_changes['tag_list'].index(old_tag)
             if index_to_rename < 0:
-                print(f"{pair[0]} not found in {runner_after_changes['tag_list']}")
+                print(f"{old_tag} not found in {runner_after_changes['tag_list']}")
                 return False, runner
-            runner_after_changes['tag_list'][index_to_rename] = pair[1]
+            runner_after_changes['tag_list'][index_to_rename] = new_tag
         return True, runner_after_changes
 
     @staticmethod
