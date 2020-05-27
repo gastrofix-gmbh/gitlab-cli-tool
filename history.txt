@@ -1,0 +1,18 @@
+
+# 2020-05-27 13:17:21.767661
++runners list --name
+
+# 2020-05-27 13:17:25.296632
++runners list --name qa-01
+
+# 2020-05-27 14:03:07.622705
++runners retag atf:atf2 --name qa-01.01
+
+# 2020-05-27 14:03:16.229334
++runners list --name qa-01
+
+# 2020-05-27 14:03:24.271639
++runners retag atf2:atf --name qa-01.01
+
+# 2020-05-27 14:03:30.368196
++ls
