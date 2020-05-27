@@ -7,7 +7,7 @@ import pytest
 import responses
 
 from gitlab_cli_tool.cli_api import Filtering
-from gitlab_cli_tool.cli_api import GitLabDataFilter, GitlabAPI
+from gitlab_cli_tool.cli_api import GitLabDataFilter, GitlabAPI, Runner
 from gitlab_cli_tool.gitlab_cli import GitLabCLI
 from gitlab_cli_tool.tests.conftest import (
     CORRECT_CLI_ARGUMENTS,
@@ -22,9 +22,9 @@ from gitlab_cli_tool.tests.conftest import (
 
 def test_parser_names():
     parsed_args = GitLabCLI.parse_args(CORRECT_CLI_ARGUMENTS)
-    assert parsed_args.property_name == 'runners'
-    assert parsed_args.action ==['list']
-    assert parsed_args.tag == ['atf']
+    assert parsed_args.property_name == "runners"
+    assert parsed_args.action == ["list"]
+    assert parsed_args.tag == ["atf"]
 
 
 def test_checking_filters():
@@ -38,8 +38,12 @@ def test_checking_filters():
 def test_check_gitlabdatafilter_init():
     cli = GitLabCLI()
     cli.assign_args_to_cli(CORRECT_CLI_ARGUMENTS)
-    cli_filter = GitLabDataFilter(property_name=cli.property_name, action=cli.action, tags=cli.tags,
-                                  names=cli.names)
+    cli_filter = GitLabDataFilter(
+        property_name=cli.property_name,
+        action=cli.action,
+        tags=cli.tags,
+        names=cli.names,
+    )
     assert cli.property_name == cli_filter.property_name
     assert cli.action == cli_filter.action
     assert cli.tags == cli_filter.tags
@@ -47,30 +51,38 @@ def test_check_gitlabdatafilter_init():
 
 
 def test_get_projects_filtered_runners_by_tags(gitlabapi, project_runners_dict):
-    tags1 = ['tag1']
+    tags1 = ["tag1"]
     expected_output1 = project_runners_dict[:6]
-    tags2 = ['tag']
+    tags2 = ["tag"]
     expected_output2 = project_runners_dict
-    tags3 = ['tag3']
+    tags3 = ["tag3"]
     expected_output3 = project_runners_dict[6:]
-    output = gitlabapi.get_projects_filtered_runners_by_tags(project_runners_dict, tags1)
+    output = gitlabapi.get_projects_filtered_runners_by_tags(
+        project_runners_dict, tags1
+    )
     assert expected_output1 == output
-    output = gitlabapi.get_projects_filtered_runners_by_tags(project_runners_dict, tags2)
+    output = gitlabapi.get_projects_filtered_runners_by_tags(
+        project_runners_dict, tags2
+    )
     assert expected_output2 == output
-    output = gitlabapi.get_projects_filtered_runners_by_tags(project_runners_dict, tags3)
+    output = gitlabapi.get_projects_filtered_runners_by_tags(
+        project_runners_dict, tags3
+    )
     assert expected_output3 == output
 
 
 def test_filter_by_names(gitlabapi, project_runners_with_names):
-    names_filters = ['qa-01', 'qa-02']
+    names_filters = ["qa-01", "qa-02"]
     correct_output = [1, 2, 3]
     output = gitlabapi.filter_by_names(project_runners_with_names, names_filters)
     assert correct_output == output
 
 
-@mock.patch('gitlab_cli_tool.cli_api.GitlabAPI.filter_by_names')
-@mock.patch('gitlab_cli_tool.cli_api.GitlabAPI.get_projects_runners')
-def test_get_projects_filtered_runners_by_names(mock_project_runners, mock_filter_by_name, gitlabapi, project_runners):
+@mock.patch("gitlab_cli_tool.cli_api.GitlabAPI.filter_by_names")
+@mock.patch("gitlab_cli_tool.cli_api.GitlabAPI.get_projects_runners")
+def test_get_projects_filtered_runners_by_names(
+    mock_project_runners, mock_filter_by_name, gitlabapi, project_runners
+):
     mock_project_runners.return_value = project_runners
     mock_filter_by_name.return_value = FILTERED_BY_NAME
     correct_output = FILTERED_BY_NAME
@@ -83,30 +95,30 @@ def test_get_projects_filtered_runners_by_names(mock_project_runners, mock_filte
 def test_handle_pagination(gitlabapi):
     responses.add(
         responses.Response(
-            method='GET',
+            method="GET",
             url=URLS_FOR_PAGINATION[0],
-            json=[{'id': '1'}],
-            headers=HEADERS_FOR_PAGINATION[0]
+            json=[{"id": "1"}],
+            headers=HEADERS_FOR_PAGINATION[0],
         )
     )
     responses.add(
         responses.Response(
-            method='GET',
+            method="GET",
             url=URLS_FOR_PAGINATION[1],
-            json=[{"id": '2'}],
-            headers=HEADERS_FOR_PAGINATION[1]
+            json=[{"id": "2"}],
+            headers=HEADERS_FOR_PAGINATION[1],
         )
     )
     responses.add(
         responses.Response(
-            method='GET',
+            method="GET",
             url=URLS_FOR_PAGINATION[2],
-            json=[{"id": '3'}],
-            headers=HEADERS_FOR_PAGINATION[2]
+            json=[{"id": "3"}],
+            headers=HEADERS_FOR_PAGINATION[2],
         )
     )
     output = gitlabapi.handle_pagination(URLS_FOR_PAGINATION[0])
-    expected_output = [{'id': '1'}, {'id': '2'}, {'id': '3'}]
+    expected_output = [{"id": "1"}, {"id": "2"}, {"id": "3"}]
     assert output == expected_output
 
 
@@ -116,20 +128,54 @@ def test_count_jobs_for_runners():
     assert output == expected_output
 
 
-@mock.patch('gitlab_cli_tool.cli_api.GitlabAPI.count_jobs_for_runners')
-@mock.patch('gitlab_cli_tool.cli_api.GitlabAPI.get_running_jobs_from_project')
-def test_assign_active_jobs_to_runners(running_jobs_from_project, counted_jobs_for_runners, gitlabapi):
+@mock.patch("gitlab_cli_tool.cli_api.GitlabAPI.count_jobs_for_runners")
+@mock.patch("gitlab_cli_tool.cli_api.GitlabAPI.get_running_jobs_from_project")
+def test_assign_active_jobs_to_runners(
+    running_jobs_from_project, counted_jobs_for_runners, gitlabapi
+):
     running_jobs_from_project.return_value = mock.Mock()
     counted_jobs_for_runners.return_value = {278: 2, 279: 1, 280: 2}
-    expected_output = [{'id': 278, 'active_jobs': 2}, {'id': 279, 'active_jobs': 1}, {'id': 280, 'active_jobs': 2},
-                       {'id': 281, 'active_jobs': 0}]
-    output = gitlabapi.assign_active_jobs_to_runners(RUNNERS, 1)
-    assert output == expected_output
+    expected_output = [
+        {"id": 278, "active_jobs": 2},
+        {"id": 279, "active_jobs": 1},
+        {"id": 280, "active_jobs": 2},
+        {"id": 281, "active_jobs": 0},
+    ]
+    list_of_runners = [
+        Runner(
+            id=runner["id"],
+            description="",
+            ip_address="",
+            active=True,
+            is_shared=True,
+            name="",
+            online=True,
+            status="",
+        )
+        for runner in RUNNERS
+    ]
+
+    expected_list_of_runners = [
+        Runner(
+            id=runner["id"],
+            description="",
+            ip_address="",
+            active=True,
+            is_shared=True,
+            name="",
+            online=True,
+            status="",
+            active_jobs=runner["active_jobs"],
+        )
+        for runner in expected_output
+    ]
+    output = gitlabapi.assign_active_jobs_to_runners(list_of_runners, 1)
+    assert output == expected_list_of_runners
 
 
 def test_format_variables(gitlabapi):
     variables = ["var1=1", "var2=2"]
-    expected_output = {'var1': '1', 'var2': '2'}
+    expected_output = {"var1": "1", "var2": "2"}
     output = gitlabapi.format_variables(variables)
     assert output == expected_output
 
@@ -185,24 +231,31 @@ def test_convert_secrets_to_dict(gitlabdatafilter):
     assert {} == output
 
 
-@mock.patch('os.path.expanduser')
-@mock.patch('os.makedirs')
-@mock.patch('gitlab_cli_tool.cli_api.GitLabDataFilter.assign_secrets_to_class')
-@mock.patch('builtins.open',
-            new_callable=mock.mock_open(read_data="SERVER=server"))
-@mock.patch('os.path.exists')
-def test_assign_secrets(os_path_exists_mock, open_mock, assign_secrets_to_class_mock, os_makedirs_mock, expanduser_mock,
-                        gitlabdatafilter):
-    file_content = "SERVER=server_name\nTOKEN=token\nTRIGGER_TOKEN=trigger_token\nPROJECT_ID=1\n"
+@mock.patch("os.path.expanduser")
+@mock.patch("os.makedirs")
+@mock.patch("gitlab_cli_tool.cli_api.GitLabDataFilter.assign_secrets_to_class")
+@mock.patch("builtins.open", new_callable=mock.mock_open(read_data="SERVER=server"))
+@mock.patch("os.path.exists")
+def test_assign_secrets(
+    os_path_exists_mock,
+    open_mock,
+    assign_secrets_to_class_mock,
+    os_makedirs_mock,
+    expanduser_mock,
+    gitlabdatafilter,
+):
+    file_content = (
+        "SERVER=server_name\nTOKEN=token\nTRIGGER_TOKEN=trigger_token\nPROJECT_ID=1\n"
+    )
     os_path_exists_mock.return_value = True
-    expanduser_mock.return_value = ''
+    expanduser_mock.return_value = ""
     gitlabdatafilter.assign_secrets()
-    open_mock.assert_called_with('/secrets.txt', 'r')
+    open_mock.assert_called_with("/secrets.txt", "r")
     assert os_makedirs_mock.call_count == 0
     assert assign_secrets_to_class_mock.call_count == 1
     # checking if assign_secrets_to_class was called with changed read_data argument (SERVER=server)
     # for dictionary {"SERVER":'server'}
-    assert assign_secrets_to_class_mock.called_with({"SERVER": 'server'})
+    assert assign_secrets_to_class_mock.called_with({"SERVER": "server"})
 
     os_path_exists_mock.return_value = False
     gitlabdatafilter.assign_secrets()
@@ -211,33 +264,39 @@ def test_assign_secrets(os_path_exists_mock, open_mock, assign_secrets_to_class_
     assert call().__enter__().write(file_content) in open_mock.mock_calls
 
 
-@mock.patch('gitlab_cli_tool.cli_api.Gitlab')
-@mock.patch('os.path.expanduser')
+@mock.patch("gitlab_cli_tool.cli_api.Gitlab")
+@mock.patch("os.path.expanduser")
 def test_assign_secrets_temporary_file_no_exist(expanduser_mock, gitlab_mock):
-    expected_output = ['SERVER=server_name', 'TOKEN=token', 'TRIGGER_TOKEN=trigger_token', 'PROJECT_ID=1']
+    expected_output = [
+        "SERVER=server_name",
+        "TOKEN=token",
+        "TRIGGER_TOKEN=trigger_token",
+        "PROJECT_ID=1",
+    ]
     with tempfile.TemporaryDirectory() as tmpdirname:
         expanduser_mock.return_value = tmpdirname
         gitlab_filter = GitLabDataFilter()
-        assert os.path.exists(f'{tmpdirname}/secrets.txt')
-        with open(f'{tmpdirname}/secrets.txt', "r") as f:
+        assert os.path.exists(f"{tmpdirname}/secrets.txt")
+        with open(f"{tmpdirname}/secrets.txt", "r") as f:
             secrets = f.read().splitlines()
         assert expected_output == secrets
-        assert gitlab_filter.server == 'server_name'
-        assert gitlab_filter.token == 'token'
-        assert gitlab_filter.trigger_token == 'trigger_token'
+        assert gitlab_filter.server == "server_name"
+        assert gitlab_filter.token == "token"
+        assert gitlab_filter.trigger_token == "trigger_token"
 
 
-@mock.patch('gitlab_cli_tool.cli_api.Gitlab')
-@mock.patch('os.path.expanduser')
+@mock.patch("gitlab_cli_tool.cli_api.Gitlab")
+@mock.patch("os.path.expanduser")
 def test_assign_secrets_temporary_file_exists(expanduser_mock, gitlab_mock):
     with tempfile.TemporaryDirectory() as tmpdirname:
         expanduser_mock.return_value = tmpdirname
-        os.makedirs(os.path.dirname(f'{tmpdirname}/secrets.txt'), exist_ok=True)
-        with open(f'{tmpdirname}/secrets.txt', "w") as f:
+        os.makedirs(os.path.dirname(f"{tmpdirname}/secrets.txt"), exist_ok=True)
+        with open(f"{tmpdirname}/secrets.txt", "w") as f:
             f.write(
-                "SERVER=test_server\nTOKEN=test_token\nTRIGGER_TOKEN=test_trigger_token\nPROJECT_ID=1\n")
-        assert os.path.exists(f'{tmpdirname}/secrets.txt')
+                "SERVER=test_server\nTOKEN=test_token\nTRIGGER_TOKEN=test_trigger_token\nPROJECT_ID=1\n"
+            )
+        assert os.path.exists(f"{tmpdirname}/secrets.txt")
         gitlab_filter = GitLabDataFilter()
-        assert gitlab_filter.server == 'test_server'
-        assert gitlab_filter.token == 'test_token'
-        assert gitlab_filter.trigger_token == 'test_trigger_token'
+        assert gitlab_filter.server == "test_server"
+        assert gitlab_filter.token == "test_token"
+        assert gitlab_filter.trigger_token == "test_trigger_token"
