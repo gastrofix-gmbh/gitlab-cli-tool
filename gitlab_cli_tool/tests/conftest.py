@@ -118,6 +118,8 @@ ALL_INFO_RUNNERS_DICT = [
     },
 ]
 
+ALL_INFO_RUNNERS = [Runner(**runner) for runner in ALL_INFO_RUNNERS_DICT]
+
 
 @pytest.fixture()
 def project_runners_with_names():
