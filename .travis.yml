@@ -6,6 +6,9 @@ jobs:
       python: "3.7"
       script:
         - pytest
+      cache:
+        directories:
+          - $HOME/.cache/pre-commit
       branches:
         except:
           - master
