@@ -4,7 +4,7 @@ jobs:
       language: python
       python: "3.7"
       script:
-        - pip install $(cat ./requirements.txt | grep "pre-commit")
+        - pip install $(cat ./requirements.txt | egrep "^pre-commit==[0-9\.]+")
         - pre-commit run --all-files
       branches:
         except:

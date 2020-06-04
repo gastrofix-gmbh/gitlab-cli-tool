@@ -121,6 +121,13 @@ For example `runners list --ignore tag qa` will list all runners but not those w
 `runners resume --name qa-01 --ignore name qa-01.01 ` will resume runners containing `qa-01` in name but will ignore `qa-01.01`
 
 
+#### Change runners tags
+You can change runners tags. It is good practise for change tags only of filtered runners.
+Usage `runners retag old1:new1,old2:new2` <br/> more examples: <br/>
+`runners retag tag_old:tag_new --name qa-x1` <br/>
+`runners retag tag_old:tag_new --name qa-x1 --ignore name qa-x12`
+
+
 #### Trigger a pipeline by branch name
 Trigger a pipeline command <br/>
 `pipeline run --branch master` 
