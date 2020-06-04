@@ -6,7 +6,6 @@ jobs:
       python: "3.7"
       script:
         - pytest
-        - pip install pre-commit==2.4.0
         - pre-commit run --all-files
       cache:
         directories:
