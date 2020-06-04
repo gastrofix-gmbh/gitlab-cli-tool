@@ -9,8 +9,11 @@ from prompt_toolkit.history import FileHistory
 from gitlab_cli_tool.cli_api import PropertyName, Actions
 from gitlab_cli_tool.gitlab_cli import GitLabCLI
 
-GitlabCLIKeywords = [property_name.value for property_name in PropertyName] + [action.value for action in Actions] + [
-    '--branch', '--tag', '--name', '--variables', '--ignore']
+GitlabCLIKeywords = (
+    [property_name.value for property_name in PropertyName]
+    + [action.value for action in Actions]
+    + ["--branch", "--tag", "--name", "--variables", "--ignore"]
+)
 
 
 class GitlabCLICompleter(Completer):
@@ -26,13 +29,14 @@ def main():
     keyboard_interrupt = 0
     while 1:
         try:
-            user_input = prompt(u'Gitlabcli > ',
-                                history=FileHistory('history.txt'),
-                                auto_suggest=AutoSuggestFromHistory(),
-                                completer=GitlabCLICompleter(),
-                                )
+            user_input = prompt(
+                u"Gitlabcli > ",
+                history=FileHistory("history.txt"),
+                auto_suggest=AutoSuggestFromHistory(),
+                completer=GitlabCLICompleter(),
+            )
             keyboard_interrupt = 0
-            if user_input.lower() == 'exit' or user_input.lower() == 'quit':
+            if user_input.lower() == "exit" or user_input.lower() == "quit":
                 break
         except KeyboardInterrupt:
             keyboard_interrupt += 1
@@ -48,8 +52,8 @@ def main():
                 print(GitLabCLI().get_result(input))
             except SystemExit:
                 pass
-    print('Exited.')
+    print("Exited.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
