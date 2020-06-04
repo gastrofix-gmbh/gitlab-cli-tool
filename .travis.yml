@@ -4,7 +4,7 @@ jobs:
       language: python
       python: "3.7"
       script:
-        - pip install pre-commit==2.4.0
+        - pip install $(cat ./requirements.txt | grep "pre-commit")
         - pre-commit run --all-files
       branches:
         except:
