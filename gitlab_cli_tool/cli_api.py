@@ -7,6 +7,7 @@ from typing import List, Dict, Union
 import aiohttp
 import requests
 from aiohttp.client import ClientSession
+from aiohttp import ContentTypeError
 from gitlab import Gitlab
 from gitlab.v4.objects import ProjectRunner
 from tabulate import tabulate
