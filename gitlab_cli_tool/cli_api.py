@@ -314,12 +314,18 @@ class GitlabAPI:
         for runner, runner_tags in zip(runners, runners_tags):
             runner_obj = Runner(**runner._attrs)
             runner_obj.tag_list = runner_tags
-            # import pdb; pdb.set_trace()
-            # raise Exception('stop')
-            # runner_obj = runner._attrs
-            # runner_obj['tag_list'] = runner_tags
             runner_list.append(runner_obj)
+
+        if runner_list:
+            self.validate_runners_tags(runner_list)
+
         return runner_list
+
+    @staticmethod
+    def validate_runners_tags(runners: List[Runner]):
+        for runner in runners:
+            if isinstance(runner.tag_list, ContentTypeError):
+                raise Exception("Wrong Gitlab Credentials or try to use VPN")
 
     async def assign_tags_to_runners(self, runners: List[ProjectRunner]) -> List[List]:
         async with aiohttp.ClientSession() as session:
