@@ -432,13 +432,25 @@ class GitlabAPI:
         return data
 
     def get_project(self, id):
-        return self.gl.projects.get(id)
+        try:
+            return self.gl.projects.get(id)
+        except TypeError as e:
+            print(e)
+            print("Wrong Gitlab Credentials or try to use VPN")
 
     def list_all_projects(self):
-        return self.gl.projects.list(all=True)
+        try:
+            return self.gl.projects.list(all=True)
+        except TypeError as e:
+            print(e)
+            print("Wrong Gitlab Credentials or try to use VPN")
 
     def list_all_runners(self):
-        return self.gl.runners.list(all=True)
+        try:
+            return self.gl.runners.list(all=True)
+        except TypeError as e:
+            print(e)
+            print("Wrong Gitlab Credentials or try to use VPN")
 
     def assign_active_jobs_to_runners(
         self, runners: List[Runner], project_id: str
