@@ -1,3 +1,27 @@
 
 # 2020-06-05 12:46:56.155910
 +runners list
+
+# 2020-06-22 14:12:02.369194
++runner list --tag qa-01
+
+# 2020-06-22 14:12:05.933764
++runners list --tag qa-01
+
+# 2020-06-22 14:12:34.626904
++runners retag qa-01.01:qa-01.01_test --tag qa-01
+
+# 2020-06-22 14:15:33.698900
++runners retag qa-01.01:qa-01.01_test,atf:atf2 --tag qa-01
+
+# 2020-06-22 14:42:14.327076
++runners retag qa-01.01:qa-01.01_test,qa-01.02:qa-01.02_test --tag qa-01
+
+# 2020-06-22 14:43:01.845857
++runners list --tag qa-01
+
+# 2020-06-22 14:43:55.680013
++runners retag qa-01.01:qa-01.01_test,qa-01.02:qa-01.02_test --tag qa-01
+
+# 2020-06-22 14:47:50.257506
++runners retag qa-01.01_test:qa-01.01,qa-01.02_test:qa-01.02 --tag qa-01
