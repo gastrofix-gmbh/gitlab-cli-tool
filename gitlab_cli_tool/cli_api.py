@@ -261,8 +261,6 @@ class GitLabDataFilter:
                 index_to_rename = runner_after_changes.tag_list.index(old_tag)
                 runner_after_changes.tag_list[index_to_rename] = new_tag
             except ValueError:
-                # print(f"{old_tag} not found in {runner_after_changes.tag_list}")
-                # return False, runner
                 pass
         return True, runner_after_changes
 
