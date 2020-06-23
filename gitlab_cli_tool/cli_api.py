@@ -214,7 +214,8 @@ class GitLabDataFilter:
         runners_after_changes = []
         for runner in runners:
             changed, new_runner = self.retag_algorithm(runner, tags_to_change)
-            runners_after_changes.append((changed, runner, new_runner))
+            if new_runner != runner:
+                runners_after_changes.append((changed, runner, new_runner))
         self.inform_user_about_changes(runners_after_changes)
         if self.ask_for_change():
             self.commit_changes_to_runners(
@@ -256,11 +257,11 @@ class GitLabDataFilter:
     def retag_algorithm(runner: Runner, tags_to_change):
         runner_after_changes = copy.deepcopy(runner)
         for old_tag, new_tag in tags_to_change:
-            index_to_rename = runner_after_changes.tag_list.index(old_tag)
-            if index_to_rename < 0:
-                print(f"{old_tag} not found in {runner_after_changes.tag_list}")
-                return False, runner
-            runner_after_changes.tag_list[index_to_rename] = new_tag
+            try:
+                index_to_rename = runner_after_changes.tag_list.index(old_tag)
+                runner_after_changes.tag_list[index_to_rename] = new_tag
+            except ValueError:
+                pass
         return True, runner_after_changes
 
     @staticmethod
