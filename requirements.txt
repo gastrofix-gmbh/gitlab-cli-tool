@@ -32,7 +32,7 @@ pyparsing==2.4.2
 pytest==5.1.2
 python-dotenv==0.10.3
 python-gitlab==1.11.0
-PyYAML==5.3.1
+PyYAML==5.4
 requests==2.22.0
 requests-mock==1.7.0
 responses==0.10.6
